@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Likert Survey Pro — Visual Infographic | TCViz</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <style>
+    :root {
+      --bg:#FAF9F5; --bg2:#EDE9DE; --bd:#F5F3ED; --line:#DAD9D4;
+      --t1:#3D3929; --t2:#535146; --t3:#83827D;
+      --acc:#2B6CB0; --accd:#1F4E80; --acc2:#3E9C5B; --acc2l:#D9EFE0;
+      --gold:#D9A441; --violet:#8E5FC4; --neg:#B5473A;
+      --s1:#B5473A; --s2:#D08B85; --s3:#DAD9D4; --s4:#93C2A4; --s5:#3E9C5B;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #888; color: var(--t1); }
+
+    #dl-btn {
+      position: fixed; top: 12px; left: 12px; z-index: 10;
+      background: var(--acc); color: #fff; border: none; border-radius: 6px;
+      padding: 8px 16px; font: 700 13px 'Segoe UI', sans-serif; cursor: pointer;
+    }
+    #dl-btn:hover { background: var(--accd); }
+    #fitcheck { position: fixed; bottom: 10px; right: 10px; z-index: 10; font: 700 13px 'Segoe UI', sans-serif; padding: 6px 12px; border-radius: 6px; color: #fff; }
+
+    #infographic {
+      width: 1366px; height: 768px; overflow: hidden;
+      background: var(--bg); color: var(--t1);
+      display: flex; flex-direction: column;
+      padding: 12px 28px;
+    }
+
+    /* ── HEADER ── */
+    .header { display: grid; grid-template-columns: auto 1fr auto; gap: 22px; align-items: center; margin-bottom: 4px; }
+    .header h1 { font-size: 28px; font-weight: 700; line-height: 1.1; }
+    .header h1 span { color: var(--acc); }
+    .header .sub { color: var(--t3); font-size: 13px; margin-top: 3px; }
+    .badge-row { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 520px; }
+    .badge { display: inline-flex; align-items: center; gap: 4px; background: var(--bd); border: 1px solid var(--line); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; color: var(--t2); }
+    .badge.red  { background: var(--acc); border-color: var(--acc); color: #fff; }
+    .badge.blue { background: var(--acc2l); border-color: var(--acc2); color: var(--acc2); }
+    .version-tag { background: var(--acc); color: #fff; border-radius: 20px; font-size: 11px; font-weight: 700; padding: 3px 10px; vertical-align: middle; }
+
+    /* ── MAIN GRID ── */
+    .main { display: grid; grid-template-columns: 372px 300px 318px 1fr; gap: 12px; flex: 1; }
+    .col { display: flex; flex-direction: column; gap: 5px; }
+
+    .sec-head { display: flex; align-items: center; gap: 7px; }
+    .sec-head .num { width: 20px; height: 20px; border-radius: 50%; background: var(--acc); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .sec-head h2 { font-size: 13px; color: var(--acc); font-weight: 700; }
+
+    .panel { background: var(--bd); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
+
+    /* ── ANATOMY ── */
+    .anatomy-title { font-size: 9px; font-weight: 700; color: var(--t3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+    .chart-svg-wrap svg { background: #fff; border-radius: 6px; }
+    .legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 6px; }
+    .legend-item { display: flex; align-items: flex-start; gap: 6px; background: #fff; border-radius: 6px; padding: 3px 6px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; margin-top: 2px; border: 1px solid var(--line); }
+    .legend-item > div { font-size: 9.5px; line-height: 1.2; }
+    .legend-item strong { display: block; font-size: 10.5px; color: var(--t1); line-height: 1.2; }
+    .legend-item span { font-size: 9.5px; color: var(--t3); line-height: 1.2; }
+
+    /* ── STATS ── */
+    .stats-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+    .stat-card { background: var(--bd); border: 1px solid var(--line); border-radius: 6px; padding: 4px 4px; text-align: center; }
+    .stat-card .num { font-size: 17px; font-weight: 700; color: var(--acc); line-height: 1.1; }
+    .stat-card .lbl { font-size: 9px; color: var(--t3); line-height: 1.15; }
+    .stats-row .stat-card:first-child { background: linear-gradient(135deg, var(--acc), var(--acc2)); border-color: transparent; }
+    .stats-row .stat-card:first-child .num, .stats-row .stat-card:first-child .lbl { color: #fff; }
+
+    /* ── FIELD WELLS ── */
+    .wells-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+    .well-card { background: #fff; border-radius: 6px; padding: 4px 7px; border: 1px solid var(--line); border-left: 4px solid var(--acc); }
+    .well-card.pro { border-left-color: var(--acc2); }
+    .well-card.opt { border-left-color: #8FB3DA; }
+    .well-card.warn { border-left-color: var(--gold); }
+    .well-card .wlabel { font-size: 8.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: var(--t3); }
+    .well-card.pro .wlabel { color: var(--acc2); }
+    .well-card.warn .wlabel { color: #A8791F; }
+    .well-card .wname { font-size: 11px; font-weight: 700; color: var(--t1); line-height: 1.2; }
+    .well-card .wdesc { font-size: 9.5px; color: var(--t2); margin-top: 1px; line-height: 1.25; }
+
+    /* ── FEATURES ── */
+    .feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+    .feat-card { background: #fff; border-radius: 6px; padding: 5px 8px; border: 1px solid var(--line); border-top: 3px solid var(--acc); position: relative; }
+    .feat-card.pro { border-top-color: var(--acc2); }
+    .feat-card .icon { font-size: 13px; float: left; margin-right: 4px; line-height: 1.2; }
+    .feat-card h3 { font-size: 11px; color: var(--t1); line-height: 1.25; margin-bottom: 2px; padding-right: 26px; }
+    .feat-card p { font-size: 9.5px; color: var(--t2); line-height: 1.3; clear: both; }
+    .pro-pill { position: absolute; top: 4px; right: 5px; background: var(--acc2); color: #fff; font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 8px; letter-spacing: .5px; }
+
+    /* ── FREE vs PRO ── */
+    .tier-table { width: 100%; border-collapse: separate; border-spacing: 0; background: #fff; border-radius: 10px; overflow: hidden; border: 2px solid var(--line); }
+    .tier-table th { padding: 4px 8px; font-size: 11px; text-align: left; text-transform: uppercase; letter-spacing: .8px; }
+    .tier-table th:first-child { background: var(--bd); color: var(--t2); }
+    .tier-table th.free { background: var(--acc); color: #fff; text-align: center; width: 48px; }
+    .tier-table th.pro  { background: var(--acc2); color: #fff; text-align: center; width: 48px; }
+    .tier-table td { padding: 1.5px 8px; border-bottom: 1px solid var(--bd); font-size: 10.5px; color: var(--t2); line-height: 1.3; }
+    .tier-table td:not(:first-child) { text-align: center; font-size: 11px; }
+    .tier-table tr:last-child td { border-bottom: none; }
+    .check { color: var(--acc); font-weight: 700; }
+    .tier-table td.check:last-child { color: var(--acc2); }
+    .cross { color: var(--line); }
+
+    /* ── FORMAT PANE ── */
+    .pane-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; }
+    .pane-group { background: #fff; border-radius: 6px; padding: 3px 7px; border: 1px solid var(--line); }
+    .pane-group h4 { font-size: 10.5px; color: var(--t1); font-weight: 700; line-height: 1.25; }
+    .pane-group h4 em { font-style: normal; font-size: 8px; color: var(--acc2); font-weight: 700; }
+    .pane-group ul { list-style: none; font-size: 9.5px; line-height: 1.3; }
+    .pane-group ul li { display: inline; font-size: 9.5px; color: var(--t2); line-height: 1.3; }
+    .pane-group ul li::before { content: ' · '; color: var(--acc); font-weight: 700; }
+    .pane-group ul li:first-child::before { content: ''; }
+
+    /* ── GETTING STARTED ── */
+    .steps { display: flex; flex-direction: column; gap: 4px; }
+    .step { background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 4px 8px; display: flex; gap: 7px; align-items: flex-start; }
+    .step .n { width: 16px; height: 16px; border-radius: 50%; background: var(--acc); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+    .step div { font-size: 9.5px; color: var(--t2); line-height: 1.3; }
+    .step strong { color: var(--t1); font-size: 10.5px; }
+    .warnbox { background: #FBF3E0; border: 1px solid var(--gold); border-left: 4px solid var(--gold); border-radius: 6px; padding: 5px 8px; }
+    .warnbox strong { font-size: 10.5px; color: #8A6212; display: block; line-height: 1.25; }
+    .warnbox p { font-size: 9.5px; color: var(--t2); line-height: 1.3; margin-top: 2px; }
+
+    /* ── FOOTER ── */
+    footer { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 2px; border-top: 1px solid var(--line); font-size: 11px; color: var(--t3); }
+    footer p { display: inline; }
+    footer a { color: var(--t3); text-decoration: none; }
+    footer a:hover { color: var(--acc); }
+    .foot-left { display: flex; align-items: center; gap: 14px; }
+
+    @media print { @page { size: A4 landscape; margin: 0; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } #dl-btn, #fitcheck { display: none; } }
+  </style>
+</head>
+<body>
+<button id="dl-btn" onclick="download()">Download PNG</button>
+<div id="fitcheck"></div>
+
+<div id="infographic">
+
+<!-- ═══════════════════════════ HEADER ═══════════════════════════ -->
+<div class="header">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 828 362" width="136" height="60">
+    <defs><linearGradient id="g" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#1F4E80"/><stop offset="0.55" stop-color="#2B6CB0"/><stop offset="1" stop-color="#3E9C5B"/>
+    </linearGradient></defs>
+    <g transform="translate(40,46)">
+      <rect x="22" y="20" width="150" height="150" rx="30" fill="none" stroke="url(#g)" stroke-width="11"/>
+      <g fill="url(#g)">
+        <rect x="42" y="110" width="20" height="58" rx="5"/><rect x="70" y="86" width="20" height="82" rx="5"/>
+        <rect x="98" y="62" width="20" height="106" rx="5"/><rect x="126" y="38" width="20" height="130" rx="5"/>
+      </g>
+    </g>
+    <text x="258" y="246" font-family="Poppins,sans-serif" font-weight="700" font-size="196" letter-spacing="-4">
+      <tspan fill="url(#g)">tc</tspan><tspan fill="#3D3929">viz</tspan>
+    </text>
+    <text x="264" y="306" font-family="Poppins,sans-serif" font-weight="500" font-size="31" letter-spacing="6.5" fill="#83827D">VISUALS TO POWER BI</text>
+  </svg>
+  <div>
+    <h1>Likert Survey <span>Pro</span> <span class="version-tag">v1.0.0.0</span></h1>
+    <p class="sub">Power BI Custom Visual — Diverging scale · Top/Bottom box · NPS · Question groups</p>
+  </div>
+  <div class="badge-row">
+    <div class="badge red">⇄ Centred on the neutral</div>
+    <div class="badge">📊 No DAX required</div>
+    <div class="badge blue">🏷️ Free / Pro tiers</div>
+    <div class="badge">♿ Accessible</div>
+    <div class="badge">🔒 No network access</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ═════════ COLUMN A ═════════ -->
+  <div class="col">
+    <!-- ═══════════════ 1. ANATOMY ═══════════════ -->
+    <div class="sec-head">
+      <div class="num">1</div>
+      <h2>Anatomy of a diverging bar</h2>
+    </div>
+    <div class="panel">
+      <div class="anatomy-title">Visual breakdown — one bar per question</div>
+      <div class="chart-svg-wrap">
+        <svg viewBox="0 0 820 230" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+          <rect x="0" y="0" width="820" height="230" fill="#fff"/>
+
+          <!-- Question labels -->
+          <text x="14" y="62"  font-family="Segoe UI,Arial" font-size="15" fill="#3D3929" dominant-baseline="middle">I know what is expected</text>
+          <text x="14" y="122" font-family="Segoe UI,Arial" font-size="15" fill="#3D3929" dominant-baseline="middle">Decisions are explained</text>
+          <text x="14" y="182" font-family="Segoe UI,Arial" font-size="15" fill="#3D3929" dominant-baseline="middle">I get useful feedback</text>
+
+          <!-- Row 1: positive -->
+          <rect x="452" y="44" width="15"  height="36" fill="#B5473A"/>
+          <rect x="467" y="44" width="29"  height="36" fill="#D08B85"/>
+          <rect x="496" y="44" width="47"  height="36" fill="#DAD9D4"/>
+          <rect x="543" y="44" width="163" height="36" fill="#93C2A4"/>
+          <rect x="706" y="44" width="108" height="36" fill="#3E9C5B"/>
+          <!-- Row 2: negative -->
+          <rect x="266" y="104" width="101" height="36" fill="#B5473A"/>
+          <rect x="367" y="104" width="123" height="36" fill="#D08B85"/>
+          <rect x="490" y="104" width="65"  height="36" fill="#DAD9D4"/>
+          <rect x="555" y="104" width="54"  height="36" fill="#93C2A4"/>
+          <rect x="609" y="104" width="18"  height="36" fill="#3E9C5B"/>
+          <!-- Row 3: mixed -->
+          <rect x="342" y="164" width="43"  height="36" fill="#B5473A"/>
+          <rect x="385" y="164" width="80"  height="36" fill="#D08B85"/>
+          <rect x="465" y="164" width="76"  height="36" fill="#DAD9D4"/>
+          <rect x="541" y="164" width="108" height="36" fill="#93C2A4"/>
+          <rect x="649" y="164" width="54"  height="36" fill="#3E9C5B"/>
+
+          <!-- Centre axis: the whole idea -->
+          <line x1="523" y1="34" x2="523" y2="210" stroke="#3D3929" stroke-width="3"/>
+          <text x="523" y="26" font-family="Segoe UI,Arial" font-size="12" fill="#3D3929" text-anchor="middle" font-weight="700">neutral centre</text>
+
+          <!-- Benchmark [Pro] -->
+          <line x1="640" y1="34" x2="640" y2="210" stroke="#8E5FC4" stroke-width="2" stroke-dasharray="5,3"/>
+          <text x="646" y="222" font-family="Segoe UI,Arial" font-size="11" fill="#8E5FC4">Benchmark [Pro]</text>
+
+          <!-- Top box [Pro] -->
+          <text x="264" y="26" font-family="Segoe UI,Arial" font-size="11" fill="#3E9C5B" font-weight="700">Bottom box [Pro]</text>
+          <text x="236" y="62"  font-family="Segoe UI,Arial" font-size="13" fill="#3E9C5B" text-anchor="end">12%</text>
+          <text x="236" y="122" font-family="Segoe UI,Arial" font-size="13" fill="#3E9C5B" text-anchor="end">62%</text>
+          <text x="236" y="182" font-family="Segoe UI,Arial" font-size="13" fill="#3E9C5B" text-anchor="end">34%</text>
+        </svg>
+      </div>
+      <div class="legend-grid">
+        <div class="legend-item"><div class="legend-dot" style="background:#B5473A"></div><div><strong>Negative points</strong><span>Left of the axis. How many is up to you</span></div></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#DAD9D4"></div><div><strong>Neutral</strong><span>Split · positive · left out</span></div></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3E9C5B"></div><div><strong>Positive points</strong><span>Right of the axis</span></div></div>
+        <div class="legend-item"><div class="legend-dot" style="background:#8E5FC4"></div><div><strong>Benchmark [Pro]</strong><span>Target or previous wave</span></div></div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card"><div class="num">0</div><div class="lbl">network<br>requests</div></div>
+      <div class="stat-card"><div class="num">6</div><div class="lbl">field<br>wells</div></div>
+      <div class="stat-card"><div class="num">3</div><div class="lbl">neutral<br>modes</div></div>
+      <div class="stat-card"><div class="num">30</div><div class="lbl">scale<br>points</div></div>
+      <div class="stat-card"><div class="num">1K</div><div class="lbl">questions<br>per render</div></div>
+    </div>
+
+    <!-- ═══════════════ 6. GETTING STARTED ═══════════════ -->
+    <div class="sec-head">
+      <div class="num">6</div>
+      <h2>Getting started</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div><strong>Question · Response · Value.</strong> One row per question × scale point, with the count in Value.</div></div>
+      <div class="step"><div class="n">2</div><div><strong>Scale order.</strong> The numeric rank of each point, 1 = leftmost.</div></div>
+      <div class="step"><div class="n">3</div><div><strong>Group [Pro].</strong> Draws the questions as labelled blocks with their mean.</div></div>
+      <div class="warnbox">
+        <strong>⚠ Scale order is not optional in practice</strong>
+        <p>Without it Power BI hands the responses over alphabetically — Agree, Disagree, Neutral, Strongly agree… — which is not a scale. The visual cannot detect that, so it would draw it wrong without saying so.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ COLUMN B ═════════ -->
+  <div class="col">
+    <!-- ═══════════════ 2. FIELD WELLS ═══════════════ -->
+    <div class="sec-head">
+      <div class="num">2</div>
+      <h2>Data field wells</h2>
+    </div>
+    <div class="wells-grid">
+      <div class="well-card">
+        <div class="wlabel">Required</div>
+        <div class="wname">Question</div>
+        <div class="wdesc">Grouping — one diverging bar per value.</div>
+      </div>
+      <div class="well-card">
+        <div class="wlabel">Required</div>
+        <div class="wname">Response</div>
+        <div class="wdesc">Grouping — the scale point, up to 30.</div>
+      </div>
+      <div class="well-card">
+        <div class="wlabel">Required</div>
+        <div class="wname">Value</div>
+        <div class="wdesc">Measure — count of answers, or any measure to spread across the scale.</div>
+      </div>
+      <div class="well-card warn">
+        <div class="wlabel">Read the note</div>
+        <div class="wname">Scale order</div>
+        <div class="wdesc">Measure — numeric rank, 1 = leftmost. Fixes the order and feeds the mean.</div>
+      </div>
+      <div class="well-card pro">
+        <div class="wlabel">Pro only</div>
+        <div class="wname">Group</div>
+        <div class="wdesc">Grouping — the block each question belongs to.</div>
+      </div>
+      <div class="well-card opt">
+        <div class="wlabel">Optional</div>
+        <div class="wname">Tooltips</div>
+        <div class="wdesc">Measure — extra measures in the tooltip, in their model format.</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ 5. FORMAT PANE ═══════════════ -->
+    <div class="sec-head">
+      <div class="num">5</div>
+      <h2>Format pane — quick reference</h2>
+    </div>
+    <div class="pane-grid">
+      <div class="pane-group">
+        <h4>Scale</h4>
+        <ul><li>Negative points</li><li>Neutral point</li><li>Show as percentage</li></ul>
+      </div>
+      <div class="pane-group">
+        <h4>Colors</h4>
+        <ul><li>Negative</li><li>Neutral</li><li>Positive</li><li>Scale point fx rule</li></ul>
+      </div>
+      <div class="pane-group">
+        <h4>Question table</h4>
+        <ul><li>Block width</li><li>Block fill &amp; opacity</li><li>Per-block colour</li><li>Block font</li><li>Question font, size, colour, align</li><li>Separator</li></ul>
+      </div>
+      <div class="pane-group">
+        <h4>Block stat <em>[PRO]</em></h4>
+        <ul><li>Show circle</li><li>Mean or responses</li><li>Size</li><li>Fill</li></ul>
+      </div>
+      <div class="pane-group">
+        <h4>Labels</h4>
+        <ul><li>Show values</li><li>Hide under %</li><li>Decimals</li><li>Question width</li><li>Label gap</li><li>Font size</li><li>Colour</li></ul>
+      </div>
+      <div class="pane-group">
+        <h4>Top / Bottom box <em>[PRO]</em></h4>
+        <ul><li>Show</li><li>Depth</li><li>Show NPS</li><li>Font size</li><li>Text colour</li><li>NPS positive / negative</li></ul>
+      </div>
+      <div class="pane-group">
+        <h4>Benchmark <em>[PRO]</em></h4>
+        <ul><li>Show</li><li>Value</li><li>Colour</li></ul>
+      </div>
+      <div class="pane-group">
+        <h4>Layout &amp; Legend</h4>
+        <ul><li>Scroll</li><li>Min row height</li><li>Segment gap</li><li>Row gap</li><li>Legend show &amp; position</li></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ COLUMN C ═════════ -->
+  <div class="col">
+    <div class="sec-head">
+      <div class="num">3</div>
+      <h2>Key features</h2>
+    </div>
+    <div class="feature-grid">
+      <div class="feat-card">
+        <span class="icon">⇄</span>
+        <h3>Centred on the neutral</h3>
+        <p>Disagreement left, agreement right, from one shared axis. Ten questions compare at a glance.</p>
+      </div>
+      <div class="feat-card">
+        <span class="icon">◐</span>
+        <h3>Three neutral modes</h3>
+        <p>Split across the centre, count as positive, or leave out of the bar — percentages recalculate.</p>
+      </div>
+      <div class="feat-card">
+        <span class="icon">↕</span>
+        <h3>Scale order well</h3>
+        <p>Fixes the order of the scale inside the visual. No Sort by column in the model needed.</p>
+      </div>
+      <div class="feat-card">
+        <span class="icon">🎨</span>
+        <h3>Conditional formatting</h3>
+        <p>One fx button governs the whole scale colour — not one per response.</p>
+      </div>
+      <div class="feat-card pro">
+        <span class="pro-pill">PRO</span>
+        <span class="icon">▣</span>
+        <h3>Top / Bottom box</h3>
+        <p>The share at each end of the scale, beside the bar, at the depth you choose.</p>
+      </div>
+      <div class="feat-card pro">
+        <span class="pro-pill">PRO</span>
+        <span class="icon">◉</span>
+        <h3>NPS pill</h3>
+        <p>Top minus bottom, drawn as a pill with its own colours and size.</p>
+      </div>
+      <div class="feat-card pro">
+        <span class="pro-pill">PRO</span>
+        <span class="icon">▤</span>
+        <h3>Question groups</h3>
+        <p>Blocks as labelled sections, each with its mean in a circle, weighted by responses.</p>
+      </div>
+      <div class="feat-card pro">
+        <span class="pro-pill">PRO</span>
+        <span class="icon">┊</span>
+        <h3>Benchmark line</h3>
+        <p>One line across every question: a target, or the previous wave.</p>
+      </div>
+      <div class="feat-card">
+        <span class="icon">♿</span>
+        <h3>Accessibility</h3>
+        <p>Roving tabindex, arrows, Enter, Escape, Shift+F10. A label per segment for screen readers.</p>
+      </div>
+      <div class="feat-card">
+        <span class="icon">🔒</span>
+        <h3>No network access</h3>
+        <p>privileges is []. No requests, telemetry or storage. No data leaves the report.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════ COLUMN D ═════════ -->
+  <div class="col">
+    <div class="sec-head">
+      <div class="num">4</div>
+      <h2>Free vs Pro</h2>
+    </div>
+    <table class="tier-table">
+      <tr><th>Feature</th><th class="free">Free</th><th class="pro">Pro</th></tr>
+      <tr><td>Diverging bars, centred</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>All three neutral modes</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Percentages or values</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Scale order well</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Diverging colour ramp</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Conditional formatting (fx)</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Data labels &amp; threshold</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Question &amp; block typography</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Per-block colours</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Legend &amp; tooltips</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Report page tooltips</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Cross-filtering &amp; multi-select</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Keyboard navigation</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>High contrast (scale)</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Scroll, gaps &amp; row height</td><td class="check">✓</td><td class="check">✓</td></tr>
+      <tr><td>Top box / bottom box</td><td class="cross">—</td><td class="check">✓</td></tr>
+      <tr><td>NPS pill</td><td class="cross">—</td><td class="check">✓</td></tr>
+      <tr><td>Benchmark line</td><td class="cross">—</td><td class="check">✓</td></tr>
+      <tr><td>Question groups (blocks)</td><td class="cross">—</td><td class="check">✓</td></tr>
+      <tr><td>Block mean circle</td><td class="cross">—</td><td class="check">✓</td></tr>
+    </table>
+    <div class="panel" style="margin-top:2px">
+      <strong style="font-size:11px;color:var(--t1);line-height:1.3">The free tier is correct, not cut down.</strong>
+      <p style="font-size:9.5px;color:var(--t2);line-height:1.3;margin-top:2px">No question, scale point or respondent is hidden, and nothing is watermarked in a published report. Pro adds the analyst readings on top.</p>
+      <p style="font-size:9.5px;color:var(--t2);line-height:1.3;margin-top:4px">While you edit without a licence, Pro features render <strong>working</strong> under a “Pro preview” watermark. Reading view shows the free result, with no watermark.</p>
+      <p style="font-size:9.5px;color:var(--acc2);line-height:1.3;margin-top:4px;font-weight:700">Pro includes a one-month free trial.</p>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ═══════════════════════════ FOOTER ═══════════════════════════ -->
+<footer>
+  <div class="foot-left">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 828 300" width="72" height="26">
+      <defs><linearGradient id="gf" x1="0" y1="1" x2="1" y2="0">
+        <stop offset="0" stop-color="#1F4E80"/><stop offset="0.55" stop-color="#2B6CB0"/><stop offset="1" stop-color="#3E9C5B"/>
+      </linearGradient></defs>
+      <g transform="translate(40,46)">
+        <rect x="22" y="20" width="150" height="150" rx="30" fill="none" stroke="url(#gf)" stroke-width="11"/>
+        <g fill="url(#gf)">
+          <rect x="42" y="110" width="20" height="58" rx="5"/><rect x="70" y="86" width="20" height="82" rx="5"/>
+          <rect x="98" y="62" width="20" height="106" rx="5"/><rect x="126" y="38" width="20" height="130" rx="5"/>
+        </g>
+      </g>
+      <text x="258" y="246" font-family="Poppins,sans-serif" font-weight="700" font-size="196"><tspan fill="url(#gf)">tc</tspan><tspan fill="#3D3929">viz</tspan></text>
+    </svg>
+    <p><strong style="color:#3D3929">Likert Survey Pro</strong> by TCViz &nbsp;·&nbsp;
+      <a href="support.html">Support</a> &nbsp;·&nbsp;
+      <a href="changelog.html">Changelog</a> &nbsp;·&nbsp;
+      <a href="privacy.html">Privacy</a> &nbsp;·&nbsp;
+      <a href="terms.html">Terms</a>
+    </p>
+  </div>
+  <p>© 2026 TCViz · <a href="mailto:support@tcviz.com">support@tcviz.com</a></p>
+</footer>
+
+</div><!-- /infographic -->
+
+<script>
+function download() {
+  html2canvas(document.getElementById('infographic'), { width: 1366, height: 768, scale: 1 }).then(function (canvas) {
+    const a = document.createElement('a');
+    a.download = 'likert-survey-pro-infographic.png';
+    a.href = canvas.toDataURL('image/png');
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  });
+}
+function checkFit() {
+  const h = document.getElementById('infographic').scrollHeight;
+  const box = document.getElementById('fitcheck');
+  if (h > 768) { box.textContent = 'OVERFLOW: ' + (h - 768) + 'px'; box.style.background = '#B00020'; document.title = 'OVERFLOW'; }
+  else { box.textContent = 'FIT 1366×768'; box.style.background = '#3E9C5B'; document.title = 'FIT'; }
+}
+window.addEventListener('load', function () { checkFit(); if (document.fonts) document.fonts.ready.then(checkFit); });
+</script>
+</body>
+</html>

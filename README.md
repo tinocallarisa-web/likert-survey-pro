@@ -54,6 +54,10 @@ npx tsc --noEmit --skipLibCheck
 node build-test.js --free   # el único modo que muestra la vista previa Pro y los avisos
 node build-test.js          # Pro forzado
 npm run package             # producción, solo tras probar
+
+node scripts/build-changelog.js        # docs/changelog.html desde CHANGELOG.md
+# La infografia de la oferta es docs/infographic.html: abrir y pulsar Download PNG
+node scripts/check-listing-length.js   # mide los textos contra los límites de Partner Center
 ```
 
 ## Repository layout
