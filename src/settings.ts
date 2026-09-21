@@ -89,6 +89,9 @@ class LabelsCard extends Card {
     questionWidth = new formattingSettings.NumUpDown({
         name: "questionWidth", displayNameKey: "Prop_LabelsQuestionWidth", value: 32
     });
+    labelGap = new formattingSettings.NumUpDown({
+        name: "labelGap", displayNameKey: "Prop_LabelsLabelGap", value: 8
+    });
     fontSize = new formattingSettings.NumUpDown({
         name: "fontSize", displayNameKey: "Prop_LabelsFontSize", value: 10
     });
@@ -98,7 +101,7 @@ class LabelsCard extends Card {
     name = "labels";
     displayNameKey = "Obj_Labels";
     slices = [this.showValues, this.minSegment, this.decimals,
-              this.questionWidth, this.fontSize, this.textColor];
+              this.questionWidth, this.labelGap, this.fontSize, this.textColor];
 }
 
 class BoxesCard extends Card {
@@ -181,7 +184,7 @@ export interface LikertSettings {
     scale: { negativeCount: number; neutralMode: "split" | "right" | "exclude"; asPercent: boolean };
     colors: { negativeColor: string; positiveColor: string; neutralColor: string };
     labels: { showValues: boolean; minSegment: number; decimals: number;
-              questionWidth: number; fontSize: number; textColor: string };
+              questionWidth: number; labelGap: number; fontSize: number; textColor: string };
     boxes: { show: boolean; size: number; showNps: boolean };
     benchmark: { show: boolean; value: number; color: string };
     layout: { enableScroll: boolean; minRowHeight: number; segmentGap: number; rowGap: number };
@@ -208,6 +211,7 @@ export function toSettings(m: LikertFormattingModel): LikertSettings {
             minSegment:    clamp(m.labels.minSegment.value, 0, 100, 5),
             decimals:      Math.round(clamp(m.labels.decimals.value, 0, 3, 0)),
             questionWidth: clamp(m.labels.questionWidth.value, 10, 60, 32),
+            labelGap:      clamp(m.labels.labelGap.value, 0, 60, 8),
             fontSize:      clamp(m.labels.fontSize.value, 7, 24, 10),
             textColor:     m.labels.textColor.value?.value ?? "#3B4252",
         },

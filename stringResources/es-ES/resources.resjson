@@ -21,6 +21,7 @@
   "Prop_LabelsMinSegment": "Ocultar etiquetas por debajo de (%)",
   "Prop_LabelsDecimals": "Decimales",
   "Prop_LabelsQuestionWidth": "Ancho de la columna de preguntas (%)",
+  "Prop_LabelsLabelGap": "Separación hasta las barras (px)",
   "Prop_LabelsFontSize": "Tamaño del texto",
   "Prop_LabelsTextColor": "Color del texto",
   "Obj_Boxes": "Top / Bottom box [Pro]",

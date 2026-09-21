@@ -139,6 +139,12 @@
         "questionWidth": {
           "displayName": "Question column width (%)",
           "displayNameKey": "Prop_LabelsQuestionWidth",
+          "description": "Maximum width of the question column. The column shrinks to fit the longest question, so short questions leave no dead space.",
+          "type": { "numeric": true }
+        },
+        "labelGap": {
+          "displayName": "Gap to the bars (px)",
+          "displayNameKey": "Prop_LabelsLabelGap",
           "type": { "numeric": true }
         },
         "fontSize": {

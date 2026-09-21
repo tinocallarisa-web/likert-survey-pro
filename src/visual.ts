@@ -554,7 +554,14 @@ export class Visual implements IVisual {
         const availH = Math.max(h - legendH, 10);
         const topPad = 6;
         const botPad = 6;
-        const qW = Math.max(60, Math.min(w * (s.labels.questionWidth / 100), w * 0.6));
+        // La columna se ajusta al texto real, con el porcentaje como TOPE en vez de como
+        // medida fija: con preguntas cortas, un ancho fijo deja un hueco muerto que nadie
+        // recupera. Se reserva sitio para el encabezado de bloque si lo hay.
+        const tope = Math.max(60, Math.min(w * (s.labels.questionWidth / 100), w * 0.6));
+        const anchoTexto = this.rows.reduce(
+            (m, r) => Math.max(m, r.question.length * s.labels.fontSize * 0.58), 0);
+        const sangria = this.rows.some(r => r.group !== null) ? 14 : 0;
+        const qW = Math.max(60, Math.min(tope, anchoTexto + sangria + 6));
         const boxW = (s.boxes.show || s.boxes.showNps) ? 96 : 0;
 
         // Altura de fila: con scroll se respeta el minimo legible y el lienzo crece; sin
@@ -571,7 +578,7 @@ export class Visual implements IVisual {
         // Con barra de desplazamiento el ancho util se reduce, o el eje queda descentrado.
         const sbw = scroll ? 14 : 0;
         const innerW = Math.max(w - sbw, 40);
-        const barLeft = qW + 8;
+        const barLeft = qW + s.labels.labelGap;
         const barW = Math.max(40, innerW - barLeft - boxW - 10);
         const centre = barLeft + barW / 2;
 

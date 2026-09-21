@@ -21,6 +21,7 @@
   "Prop_LabelsMinSegment": "Hide labels under (%)",
   "Prop_LabelsDecimals": "Decimal places",
   "Prop_LabelsQuestionWidth": "Question column width (%)",
+  "Prop_LabelsLabelGap": "Gap to the bars (px)",
   "Prop_LabelsFontSize": "Text size",
   "Prop_LabelsTextColor": "Text color",
   "Obj_Boxes": "Top / Bottom box [Pro]",
