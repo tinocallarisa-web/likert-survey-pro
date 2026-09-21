@@ -34,6 +34,8 @@
   "Obj_Layout": "Disposición",
   "Prop_LayoutEnableScroll": "Desplazar cuando las filas no caben",
   "Prop_LayoutMinRowHeight": "Alto mínimo de fila (px)",
+  "Prop_LayoutSegmentGap": "Separación entre puntos de la escala (px)",
+  "Prop_LayoutRowGap": "Separación entre filas (px)",
   "Obj_Legend": "Leyenda",
   "Prop_LegendShow": "Mostrar leyenda",
   "Prop_LegendPosition": "Posición",

@@ -138,9 +138,15 @@ class LayoutCard extends Card {
     minRowHeight = new formattingSettings.NumUpDown({
         name: "minRowHeight", displayNameKey: "Prop_LayoutMinRowHeight", value: 26
     });
+    segmentGap = new formattingSettings.NumUpDown({
+        name: "segmentGap", displayNameKey: "Prop_LayoutSegmentGap", value: 1
+    });
+    rowGap = new formattingSettings.NumUpDown({
+        name: "rowGap", displayNameKey: "Prop_LayoutRowGap", value: 0
+    });
     name = "layout";
     displayNameKey = "Obj_Layout";
-    slices = [this.enableScroll, this.minRowHeight];
+    slices = [this.enableScroll, this.minRowHeight, this.segmentGap, this.rowGap];
 }
 
 class LegendCard extends Card {
@@ -178,7 +184,7 @@ export interface LikertSettings {
               questionWidth: number; fontSize: number; textColor: string };
     boxes: { show: boolean; size: number; showNps: boolean };
     benchmark: { show: boolean; value: number; color: string };
-    layout: { enableScroll: boolean; minRowHeight: number };
+    layout: { enableScroll: boolean; minRowHeight: number; segmentGap: number; rowGap: number };
     legend: { show: boolean; position: "top" | "bottom" };
 }
 
@@ -218,6 +224,8 @@ export function toSettings(m: LikertFormattingModel): LikertSettings {
         layout: {
             enableScroll: !!m.layout.enableScroll.value,
             minRowHeight: clamp(m.layout.minRowHeight.value, 12, 80, 26),
+            segmentGap:   clamp(m.layout.segmentGap.value, 0, 6, 1),
+            rowGap:       clamp(m.layout.rowGap.value, 0, 20, 0),
         },
         legend: {
             show: !!m.legend.show.value,

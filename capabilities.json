@@ -215,6 +215,17 @@
           "displayName": "Minimum row height (px)",
           "displayNameKey": "Prop_LayoutMinRowHeight",
           "type": { "numeric": true }
+        },
+        "segmentGap": {
+          "displayName": "Gap between scale points (px)",
+          "displayNameKey": "Prop_LayoutSegmentGap",
+          "description": "Separation drawn between the stacked segments. The gap is skipped on segments too narrow to survive it, so small shares never disappear.",
+          "type": { "numeric": true }
+        },
+        "rowGap": {
+          "displayName": "Gap between rows (px)",
+          "displayNameKey": "Prop_LayoutRowGap",
+          "type": { "numeric": true }
         }
       }
     },

@@ -600,7 +600,7 @@ export class Visual implements IVisual {
         let lastGroup: string | null = null;
         this.rows.forEach((row, ri) => {
             const y = topPad + ri * rowH;
-            const barH = Math.max(6, rowH * 0.62);
+            const barH = Math.max(6, rowH * 0.62 - s.layout.rowGap);
             const by = y + (rowH - barH) / 2;
 
             if (row.group && row.group !== lastGroup) {
@@ -617,10 +617,12 @@ export class Visual implements IVisual {
             // Izquierda desde el centro hacia fuera, para que el neutro quede pegado al eje.
             let x = centre - row.negShare * (barW / 2);
             row.segments.forEach(sg => {
-                const half = sg.responseIndex === (this.settings.scale.neutralMode === "split"
-                    ? this.settings.scale.negativeCount : -1);
-                const wdt = (half ? sg.share : sg.share) * (barW / 2);
-                const width = Math.max(0, wdt);
+                const span = sg.share * (barW / 2);
+                // El hueco se resta al ancho PINTADO, no al avance: así el eje sigue
+                // centrado y los porcentajes siguen siendo proporcionales. Y solo se aplica
+                // si el tramo sobrevive: sin esta guarda, un 1% de 2 px desaparecería.
+                const gap = span > s.layout.segmentGap + 1 ? s.layout.segmentGap : 0;
+                const width = Math.max(0, span - gap);
                 const r = el("rect");
                 r.setAttribute("x", String(x)); r.setAttribute("y", String(by));
                 r.setAttribute("width", String(width)); r.setAttribute("height", String(barH));
@@ -636,14 +638,14 @@ export class Visual implements IVisual {
                 this.svg.appendChild(r);
 
                 if (s.labels.showValues && sg.share * 100 >= s.labels.minSegment && width > 16) {
-                    const lbl = text(x + width / 2, by + barH * 0.72,
+                    const lbl = text(x + span / 2, by + barH * 0.72,
                         s.scale.asPercent ? `${(sg.share * 100).toFixed(s.labels.decimals)}%`
                                           : String(Math.round(sg.value)),
                         Math.min(s.labels.fontSize, barH * 0.6), readable(sg.color), "middle");
                     lbl.setAttribute("pointer-events", "none");
                     this.svg.appendChild(lbl);
                 }
-                x += width;
+                x += span;
             });
 
             if (s.boxes.show || s.boxes.showNps) {

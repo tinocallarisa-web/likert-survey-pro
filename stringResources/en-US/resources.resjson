@@ -34,6 +34,8 @@
   "Obj_Layout": "Layout",
   "Prop_LayoutEnableScroll": "Scroll when rows do not fit",
   "Prop_LayoutMinRowHeight": "Minimum row height (px)",
+  "Prop_LayoutSegmentGap": "Gap between scale points (px)",
+  "Prop_LayoutRowGap": "Gap between rows (px)",
   "Obj_Legend": "Legend",
   "Prop_LegendShow": "Show legend",
   "Prop_LegendPosition": "Position",
