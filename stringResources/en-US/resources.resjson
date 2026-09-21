@@ -4,6 +4,7 @@
   "Role_Question": "Question",
   "Role_Response": "Response",
   "Role_Value": "Value",
+  "Role_Order": "Scale order",
   "Role_Group": "Group [Pro]",
   "Role_Tooltips": "Tooltips",
   "Obj_Scale": "Scale",

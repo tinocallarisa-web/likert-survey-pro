@@ -12,7 +12,7 @@
       "displayNameKey": "Role_Response",
       "name": "response",
       "kind": "Grouping",
-      "description": "The scale point (Strongly disagree … Strongly agree). Sort this column in the model to control the order of the scale."
+      "description": "The scale point (Strongly disagree … Strongly agree). Use the Scale order well, or sort this column in the model, to control the order of the scale."
     },
     {
       "displayName": "Value",
@@ -20,6 +20,13 @@
       "name": "value",
       "kind": "Measure",
       "description": "Count of responses, or any measure to distribute across the scale."
+    },
+    {
+      "displayName": "Scale order",
+      "displayNameKey": "Role_Order",
+      "name": "order",
+      "kind": "Measure",
+      "description": "Optional numeric rank for each scale point (1 = leftmost). Use it when the response column is not sorted in the model: without a defined order the scale is meaningless."
     },
     {
       "displayName": "Group [Pro]",
@@ -38,7 +45,7 @@
   "dataViewMappings": [
     {
       "conditions": [
-        { "question": { "max": 1 }, "response": { "max": 1 }, "value": { "max": 1 }, "group": { "max": 1 } }
+        { "question": { "max": 1 }, "response": { "max": 1 }, "value": { "max": 1 }, "order": { "max": 1 }, "group": { "max": 1 } }
       ],
       "categorical": {
         "categories": {
@@ -48,7 +55,7 @@
         "values": {
           "group": {
             "by": "response",
-            "select": [{ "bind": { "to": "value" } }, { "bind": { "to": "tooltips" } }],
+            "select": [{ "bind": { "to": "value" } }, { "bind": { "to": "order" } }, { "bind": { "to": "tooltips" } }],
             "dataReductionAlgorithm": { "top": { "count": 30 } }
           }
         }

@@ -17,13 +17,16 @@ the report.
 | Question | Grouping | One diverging bar per value |
 | Response | Grouping | The scale point. **Sort this column in the model** to fix the order of the scale |
 | Value | Measure | Count of responses, or any measure to distribute across the scale |
+| Scale order | Measure | Numeric rank per scale point, 1 = leftmost. This is what fixes the order of the scale |
 | Group [Pro] | Grouping | Block the questions belong to, drawn as a labelled section |
 | Tooltips | Measure | Extra measures in the tooltip |
 
-> The most common mistake when setting this up is leaving the response column sorted
-> alphabetically. *Agree, Disagree, Neutral, Strongly agree, Strongly disagree* is not a
-> scale, and a diverging chart built on it means nothing. Use **Sort by column** with a
-> numeric order column.
+> **Fill in Scale order.** Without a defined order Power BI hands the responses over
+> alphabetically — *Agree, Disagree, Neutral, Strongly agree, Strongly disagree* — which is
+> not a scale, and a diverging chart built on it means nothing. The visual cannot detect
+> this, so it would draw it wrong without saying so. Sorting the response column in the
+> model with **Sort by column** works too, but that needs the model configured; the well
+> keeps it inside the visual.
 
 ## Free vs Pro
 

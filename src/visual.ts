@@ -336,7 +336,7 @@ export class Visual implements IVisual {
         const cat = dv.categorical;
         const qCol = cat.categories.find(c => c.source.roles?.["question"]) ?? cat.categories[0];
         const gCol = cat.categories.find(c => c.source.roles?.["group"]);
-        const groups = cat.values.grouped ? cat.values.grouped() : [];
+        const groups = this.sortByScaleOrder(cat.values.grouped ? cat.values.grouped() : []);
         const proNow = this.isPro || this.proPreview;
 
         const fmt: IValueFormatter = valueFormatter.create({
@@ -415,6 +415,36 @@ export class Visual implements IVisual {
                 selectionId: this.host.createSelectionIdBuilder().withCategory(qCol, i).createSelectionId()
             });
         }
+    }
+
+    /**
+     * Orden de la escala. Depender de que el usuario haya configurado "Ordenar por columna"
+     * en el modelo es frágil: si no lo hace, Power BI entrega las respuestas alfabéticamente
+     * y el gráfico queda sin sentido SIN avisar. Con el pozo "Scale order" el orden es
+     * explícito y vive en el propio visual. Sin ese pozo se respeta el orden que llega.
+     */
+    private sortByScaleOrder(groups: any[]): any[] {
+        const rank = (g: any): number | null => {
+            const col = (g?.values as any[])?.find(v => v?.source?.roles?.order);
+            if (!col) { return null; }
+            for (let i = 0; i < (col.values?.length ?? 0); i++) {
+                const v = col.values[i];
+                if (v !== null && v !== undefined && isFinite(Number(v))) { return Number(v); }
+            }
+            return null;
+        };
+        const ranks = groups.map(rank);
+        if (ranks.every(r => r === null)) { return groups; }
+        // Los que no traen rango se quedan al final, en su orden original.
+        return groups
+            .map((g, i) => ({ g, i, r: ranks[i] }))
+            .sort((a, b) => {
+                if (a.r === null && b.r === null) { return a.i - b.i; }
+                if (a.r === null) { return 1; }
+                if (b.r === null) { return -1; }
+                return a.r - b.r || a.i - b.i;
+            })
+            .map(x => x.g);
     }
 
     /** Rampa divergente entre los dos extremos, pasando por el neutro. */

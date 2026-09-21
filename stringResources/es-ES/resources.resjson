@@ -4,6 +4,7 @@
   "Role_Question": "Pregunta",
   "Role_Response": "Respuesta",
   "Role_Value": "Valor",
+  "Role_Order": "Orden de la escala",
   "Role_Group": "Bloque [Pro]",
   "Role_Tooltips": "Información sobre herramientas",
   "Obj_Scale": "Escala",
