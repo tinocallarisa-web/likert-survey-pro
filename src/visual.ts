@@ -597,7 +597,9 @@ export class Visual implements IVisual {
             (m, r) => Math.max(m, r.question.length * s.qtable.questionFontSize * 0.58), 0);
         const qW = Math.max(60, Math.min(tope, anchoTexto + 12));
         const leftW = blockW + qW;
-        const boxW = (s.boxes.show || s.boxes.showNps) ? 96 : 0;
+        const boxW = (s.boxes.show ? s.boxes.fontSize * 5.2 : 0)
+                   + (s.boxes.showNps ? s.boxes.fontSize * 3.6 : 0)
+                   + ((s.boxes.show || s.boxes.showNps) ? 20 : 0);
 
         // Altura de fila: con scroll se respeta el minimo legible y el lienzo crece; sin
         // scroll las filas encogen hasta que todo cabe. Recortar filas por abajo no es una
@@ -733,18 +735,40 @@ export class Visual implements IVisual {
             });
 
             if (s.boxes.show || s.boxes.showNps) {
-                const bx = barLeft + barW + 8;
-                const parts: string[] = [];
+                const fs = s.boxes.fontSize;
+                const cy = y + rowH / 2;
+                let bx = barLeft + barW + 10;
+
                 if (s.boxes.show) {
-                    parts.push(`${(row.topBox * 100).toFixed(0)}% / ${(row.bottomBox * 100).toFixed(0)}%`);
+                    const txt = `${(row.topBox * 100).toFixed(0)}% / ${(row.bottomBox * 100).toFixed(0)}%`;
+                    const bt = text(bx, cy + fs * 0.36, txt, fs, s.boxes.textColor, "start");
+                    this.svg.appendChild(bt);
+                    bx += txt.length * fs * 0.58 + 10;
                 }
+
                 if (s.boxes.showNps) {
+                    // Pildora en vez de texto coloreado: el NPS es la cifra que se busca de
+                    // un vistazo, y un numero suelto se pierde entre el resto del texto.
                     const nps = (row.topBox - row.bottomBox) * 100;
-                    parts.push(`${nps >= 0 ? "+" : ""}${nps.toFixed(0)}`);
+                    const etq = `${nps >= 0 ? "+" : ""}${nps.toFixed(0)}`;
+                    const fondo = nps >= 0 ? s.boxes.npsPositive : s.boxes.npsNegative;
+                    const ph = Math.min(fs * 1.75, Math.max(barH, fs * 1.3));
+                    const pw = Math.max(ph, etq.length * fs * 0.62 + fs * 1.2);
+                    const pill = el("rect");
+                    pill.setAttribute("x", String(bx));
+                    pill.setAttribute("y", String(cy - ph / 2));
+                    pill.setAttribute("width", String(pw));
+                    pill.setAttribute("height", String(ph));
+                    pill.setAttribute("rx", String(ph / 2));
+                    pill.setAttribute("fill", fondo);
+                    pill.setAttribute("aria-hidden", "true");
+                    this.svg.appendChild(pill);
+                    // El texto sigue a la luminancia del relleno: con un verde claro no se
+                    // puede escribir en blanco, y el color lo elige el usuario.
+                    const nt = text(bx + pw / 2, cy + fs * 0.36, etq, fs, readable(fondo), "middle");
+                    nt.setAttribute("font-weight", "600");
+                    this.svg.appendChild(nt);
                 }
-                const bt = text(bx, y + rowH * 0.62, parts.join("  ·  "),
-                                s.labels.fontSize, s.labels.textColor, "start");
-                this.svg.appendChild(bt);
             }
         });
 

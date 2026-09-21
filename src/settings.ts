@@ -156,9 +156,22 @@ class BoxesCard extends Card {
     showNps = new formattingSettings.ToggleSwitch({
         name: "showNps", displayNameKey: "Prop_BoxesShowNps", value: false
     });
+    fontSize = new formattingSettings.NumUpDown({
+        name: "fontSize", displayNameKey: "Prop_BoxesFontSize", value: 10
+    });
+    textColor = new formattingSettings.ColorPicker({
+        name: "textColor", displayNameKey: "Prop_BoxesTextColor", value: { value: "#3B4252" }
+    });
+    npsPositive = new formattingSettings.ColorPicker({
+        name: "npsPositive", displayNameKey: "Prop_BoxesNpsPositive", value: { value: "#A3BE8C" }
+    });
+    npsNegative = new formattingSettings.ColorPicker({
+        name: "npsNegative", displayNameKey: "Prop_BoxesNpsNegative", value: { value: "#BF616A" }
+    });
     name = "boxes";
     displayNameKey = "Obj_Boxes";
-    slices = [this.show, this.size, this.showNps];
+    slices = [this.show, this.size, this.showNps, this.fontSize, this.textColor,
+              this.npsPositive, this.npsNegative];
 }
 
 class BenchmarkCard extends Card {
@@ -247,7 +260,8 @@ export interface LikertSettings {
               questionFontSize: number; questionColor: string; separator: boolean };
     labels: { showValues: boolean; minSegment: number; decimals: number;
               questionWidth: number; labelGap: number; fontSize: number; textColor: string };
-    boxes: { show: boolean; size: number; showNps: boolean };
+    boxes: { show: boolean; size: number; showNps: boolean; fontSize: number;
+             textColor: string; npsPositive: string; npsNegative: string };
     benchmark: { show: boolean; value: number; color: string };
     layout: { enableScroll: boolean; minRowHeight: number; segmentGap: number; rowGap: number };
     legend: { show: boolean; position: "top" | "bottom" };
@@ -294,6 +308,10 @@ export function toSettings(m: LikertFormattingModel): LikertSettings {
             show:    !!m.boxes.show.value,
             size:    Math.round(clamp(parseFloat(String(m.boxes.size.value)), 1, 3, 2)),
             showNps: !!m.boxes.showNps.value,
+            fontSize:    clamp(m.boxes.fontSize.value, 7, 28, 10),
+            textColor:   m.boxes.textColor.value?.value ?? "#3B4252",
+            npsPositive: m.boxes.npsPositive.value?.value ?? "#A3BE8C",
+            npsNegative: m.boxes.npsNegative.value?.value ?? "#BF616A",
         },
         benchmark: {
             show:  !!m.benchmark.show.value,

@@ -426,6 +426,49 @@
           "type": {
             "bool": true
           }
+        },
+        "fontSize": {
+          "displayName": "Text size",
+          "displayNameKey": "Prop_BoxesFontSize",
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "textColor": {
+          "displayName": "Top/Bottom text color",
+          "displayNameKey": "Prop_BoxesTextColor",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "npsPositive": {
+          "displayName": "NPS positive color",
+          "displayNameKey": "Prop_BoxesNpsPositive",
+          "description": "Colour used when the NPS is zero or above.",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "npsNegative": {
+          "displayName": "NPS negative color",
+          "displayNameKey": "Prop_BoxesNpsNegative",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
         }
       }
     },
