@@ -45,18 +45,69 @@
   "dataViewMappings": [
     {
       "conditions": [
-        { "question": { "max": 1 }, "response": { "max": 1 }, "value": { "max": 1 }, "order": { "max": 1 }, "group": { "max": 1 } }
+        {
+          "question": {
+            "max": 1
+          },
+          "response": {
+            "max": 1
+          },
+          "value": {
+            "max": 1
+          },
+          "order": {
+            "max": 1
+          },
+          "group": {
+            "max": 1
+          }
+        }
       ],
       "categorical": {
         "categories": {
-          "select": [{ "for": { "in": "group" } }, { "for": { "in": "question" } }],
-          "dataReductionAlgorithm": { "top": { "count": 1000 } }
+          "select": [
+            {
+              "for": {
+                "in": "group"
+              }
+            },
+            {
+              "for": {
+                "in": "question"
+              }
+            }
+          ],
+          "dataReductionAlgorithm": {
+            "top": {
+              "count": 1000
+            }
+          }
         },
         "values": {
           "group": {
             "by": "response",
-            "select": [{ "bind": { "to": "value" } }, { "bind": { "to": "order" } }, { "bind": { "to": "tooltips" } }],
-            "dataReductionAlgorithm": { "top": { "count": 30 } }
+            "select": [
+              {
+                "bind": {
+                  "to": "value"
+                }
+              },
+              {
+                "bind": {
+                  "to": "order"
+                }
+              },
+              {
+                "bind": {
+                  "to": "tooltips"
+                }
+              }
+            ],
+            "dataReductionAlgorithm": {
+              "top": {
+                "count": 30
+              }
+            }
           }
         }
       }
@@ -71,23 +122,36 @@
           "displayName": "Negative points",
           "displayNameKey": "Prop_ScaleNegativeCount",
           "description": "How many scale points from the left count as negative. The rest are positive, minus the neutral one if it is set apart.",
-          "type": { "numeric": true }
+          "type": {
+            "numeric": true
+          }
         },
         "neutralMode": {
           "displayName": "Neutral point",
           "displayNameKey": "Prop_ScaleNeutralMode",
           "type": {
             "enumeration": [
-              { "value": "split", "displayName": "Split across the centre" },
-              { "value": "right", "displayName": "Count as positive" },
-              { "value": "exclude", "displayName": "Leave out of the bar" }
+              {
+                "value": "split",
+                "displayName": "Split across the centre"
+              },
+              {
+                "value": "right",
+                "displayName": "Count as positive"
+              },
+              {
+                "value": "exclude",
+                "displayName": "Leave out of the bar"
+              }
             ]
           }
         },
         "asPercent": {
           "displayName": "Show as percentage",
           "displayNameKey": "Prop_ScaleAsPercent",
-          "type": { "bool": true }
+          "type": {
+            "bool": true
+          }
         }
       }
     },
@@ -98,22 +162,156 @@
         "negativeColor": {
           "displayName": "Negative end",
           "displayNameKey": "Prop_ColorsNegativeColor",
-          "type": { "fill": { "solid": { "color": true } } }
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
         },
         "positiveColor": {
           "displayName": "Positive end",
           "displayNameKey": "Prop_ColorsPositiveColor",
-          "type": { "fill": { "solid": { "color": true } } }
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
         },
         "neutralColor": {
           "displayName": "Neutral",
           "displayNameKey": "Prop_ColorsNeutralColor",
-          "type": { "fill": { "solid": { "color": true } } }
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
         },
         "fill": {
           "displayName": "Scale point",
           "displayNameKey": "Prop_ColorsFill",
-          "type": { "fill": { "solid": { "color": true } } }
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "qtable": {
+      "displayName": "Question table",
+      "displayNameKey": "Obj_Qtable",
+      "properties": {
+        "blockWidth": {
+          "displayName": "Block column width (%)",
+          "displayNameKey": "Prop_QtableBlockWidth",
+          "description": "Width of the block column, as a share of the visual. The column disappears when no field is in the Group well.",
+          "type": {
+            "numeric": true
+          }
+        },
+        "blockFill": {
+          "displayName": "Shade each block",
+          "displayNameKey": "Prop_QtableBlockFill",
+          "description": "Gives every block its own tinted background, so the sections read as a table rather than as floating labels.",
+          "type": {
+            "bool": true
+          }
+        },
+        "blockOpacity": {
+          "displayName": "Shading strength (%)",
+          "displayNameKey": "Prop_QtableBlockOpacity",
+          "type": {
+            "numeric": true
+          }
+        },
+        "blockFontFamily": {
+          "displayName": "Block font",
+          "displayNameKey": "Prop_QtableBlockFontFamily",
+          "type": {
+            "formatting": {
+              "fontFamily": true
+            }
+          }
+        },
+        "blockFontSize": {
+          "displayName": "Block text size",
+          "displayNameKey": "Prop_QtableBlockFontSize",
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "blockColor": {
+          "displayName": "Block text color",
+          "displayNameKey": "Prop_QtableBlockColor",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "questionAlign": {
+          "displayName": "Question alignment",
+          "displayNameKey": "Prop_QtableQuestionAlign",
+          "type": {
+            "enumeration": [
+              {
+                "value": "left",
+                "displayName": "Left"
+              },
+              {
+                "value": "right",
+                "displayName": "Right"
+              }
+            ]
+          }
+        },
+        "questionFontFamily": {
+          "displayName": "Question font",
+          "displayNameKey": "Prop_QtableQuestionFontFamily",
+          "type": {
+            "formatting": {
+              "fontFamily": true
+            }
+          }
+        },
+        "questionFontSize": {
+          "displayName": "Question text size",
+          "displayNameKey": "Prop_QtableQuestionFontSize",
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
+        },
+        "questionColor": {
+          "displayName": "Question text color",
+          "displayNameKey": "Prop_QtableQuestionColor",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "separator": {
+          "displayName": "Line between blocks",
+          "displayNameKey": "Prop_QtableSeparator",
+          "type": {
+            "bool": true
+          }
         }
       }
     },
@@ -124,38 +322,58 @@
         "showValues": {
           "displayName": "Show values on segments",
           "displayNameKey": "Prop_LabelsShowValues",
-          "type": { "bool": true }
+          "type": {
+            "bool": true
+          }
         },
         "minSegment": {
           "displayName": "Hide labels under (%)",
           "displayNameKey": "Prop_LabelsMinSegment",
-          "type": { "numeric": true }
+          "type": {
+            "numeric": true
+          }
         },
         "decimals": {
           "displayName": "Decimal places",
           "displayNameKey": "Prop_LabelsDecimals",
-          "type": { "numeric": true }
+          "type": {
+            "numeric": true
+          }
         },
         "questionWidth": {
           "displayName": "Question column width (%)",
           "displayNameKey": "Prop_LabelsQuestionWidth",
           "description": "Maximum width of the question column. The column shrinks to fit the longest question, so short questions leave no dead space.",
-          "type": { "numeric": true }
+          "type": {
+            "numeric": true
+          }
         },
         "labelGap": {
           "displayName": "Gap to the bars (px)",
           "displayNameKey": "Prop_LabelsLabelGap",
-          "type": { "numeric": true }
+          "type": {
+            "numeric": true
+          }
         },
         "fontSize": {
           "displayName": "Text size",
           "displayNameKey": "Prop_LabelsFontSize",
-          "type": { "formatting": { "fontSize": true } }
+          "type": {
+            "formatting": {
+              "fontSize": true
+            }
+          }
         },
         "textColor": {
           "displayName": "Text color",
           "displayNameKey": "Prop_LabelsTextColor",
-          "type": { "fill": { "solid": { "color": true } } }
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
         }
       }
     },
@@ -166,23 +384,36 @@
         "show": {
           "displayName": "Show Top/Bottom box",
           "displayNameKey": "Prop_BoxesShow",
-          "type": { "bool": true }
+          "type": {
+            "bool": true
+          }
         },
         "size": {
           "displayName": "Box size",
           "displayNameKey": "Prop_BoxesSize",
           "type": {
             "enumeration": [
-              { "value": "1", "displayName": "Top-1 / Bottom-1" },
-              { "value": "2", "displayName": "Top-2 / Bottom-2" },
-              { "value": "3", "displayName": "Top-3 / Bottom-3" }
+              {
+                "value": "1",
+                "displayName": "Top-1 / Bottom-1"
+              },
+              {
+                "value": "2",
+                "displayName": "Top-2 / Bottom-2"
+              },
+              {
+                "value": "3",
+                "displayName": "Top-3 / Bottom-3"
+              }
             ]
           }
         },
         "showNps": {
           "displayName": "Show NPS (Top − Bottom)",
           "displayNameKey": "Prop_BoxesShowNps",
-          "type": { "bool": true }
+          "type": {
+            "bool": true
+          }
         }
       }
     },
@@ -193,17 +424,27 @@
         "show": {
           "displayName": "Show benchmark line",
           "displayNameKey": "Prop_BenchmarkShow",
-          "type": { "bool": true }
+          "type": {
+            "bool": true
+          }
         },
         "value": {
           "displayName": "Positive share (%)",
           "displayNameKey": "Prop_BenchmarkValue",
-          "type": { "numeric": true }
+          "type": {
+            "numeric": true
+          }
         },
         "color": {
           "displayName": "Line color",
           "displayNameKey": "Prop_BenchmarkColor",
-          "type": { "fill": { "solid": { "color": true } } }
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
         }
       }
     },
@@ -215,24 +456,32 @@
           "displayName": "Scroll when rows do not fit",
           "displayNameKey": "Prop_LayoutEnableScroll",
           "description": "On, rows keep a readable height and the chart scrolls. Off, rows shrink so everything fits — useful when the report is exported to PDF or PowerPoint, where only the visible part is captured.",
-          "type": { "bool": true }
+          "type": {
+            "bool": true
+          }
         },
         "minRowHeight": {
           "displayName": "Minimum row height (px)",
           "displayNameKey": "Prop_LayoutMinRowHeight",
-          "type": { "numeric": true }
+          "type": {
+            "numeric": true
+          }
         },
         "segmentGap": {
           "displayName": "Gap between scale points (px)",
           "displayNameKey": "Prop_LayoutSegmentGap",
           "description": "Separation drawn between the stacked segments. The gap is skipped on segments too narrow to survive it, so small shares never disappear.",
-          "type": { "numeric": true }
+          "type": {
+            "numeric": true
+          }
         },
         "rowGap": {
           "displayName": "Gap between rows (px)",
           "displayNameKey": "Prop_LayoutRowGap",
           "description": "Vertical separation between bars. At 0 the bars fill the row and touch each other; raise it to give them air.",
-          "type": { "numeric": true }
+          "type": {
+            "numeric": true
+          }
         }
       }
     },
@@ -243,15 +492,23 @@
         "show": {
           "displayName": "Show legend",
           "displayNameKey": "Prop_LegendShow",
-          "type": { "bool": true }
+          "type": {
+            "bool": true
+          }
         },
         "position": {
           "displayName": "Position",
           "displayNameKey": "Prop_LegendPosition",
           "type": {
             "enumeration": [
-              { "value": "top", "displayName": "Top" },
-              { "value": "bottom", "displayName": "Bottom" }
+              {
+                "value": "top",
+                "displayName": "Top"
+              },
+              {
+                "value": "bottom",
+                "displayName": "Bottom"
+              }
             ]
           }
         }
@@ -259,10 +516,17 @@
     }
   },
   "tooltips": {
-    "supportedTypes": { "default": true, "canvas": true },
-    "roles": ["tooltips"]
+    "supportedTypes": {
+      "default": true,
+      "canvas": true
+    },
+    "roles": [
+      "tooltips"
+    ]
   },
-  "sorting": { "default": {} },
+  "sorting": {
+    "default": {}
+  },
   "supportsHighlight": true,
   "supportsSynchronizingFilterState": true,
   "supportsLandingPage": true,

@@ -554,14 +554,16 @@ export class Visual implements IVisual {
         const availH = Math.max(h - legendH, 10);
         const topPad = 6;
         const botPad = 6;
-        // La columna se ajusta al texto real, con el porcentaje como TOPE en vez de como
-        // medida fija: con preguntas cortas, un ancho fijo deja un hueco muerto que nadie
-        // recupera. Se reserva sitio para el encabezado de bloque si lo hay.
+        // Zona izquierda como tabla: columna de bloque y columna de pregunta. La de
+        // pregunta se ajusta al texto real, con el porcentaje como TOPE en vez de como
+        // medida fija: con preguntas cortas, un ancho fijo deja un hueco que nadie recupera.
+        const hayBloques = this.rows.some(r => r.group !== null);
+        const blockW = hayBloques ? Math.max(0, w * (s.qtable.blockWidth / 100)) : 0;
         const tope = Math.max(60, Math.min(w * (s.labels.questionWidth / 100), w * 0.6));
         const anchoTexto = this.rows.reduce(
-            (m, r) => Math.max(m, r.question.length * s.labels.fontSize * 0.58), 0);
-        const sangria = this.rows.some(r => r.group !== null) ? 14 : 0;
-        const qW = Math.max(60, Math.min(tope, anchoTexto + sangria + 6));
+            (m, r) => Math.max(m, r.question.length * s.qtable.questionFontSize * 0.58), 0);
+        const qW = Math.max(60, Math.min(tope, anchoTexto + 12));
+        const leftW = blockW + qW;
         const boxW = (s.boxes.show || s.boxes.showNps) ? 96 : 0;
 
         // Altura de fila: con scroll se respeta el minimo legible y el lienzo crece; sin
@@ -578,7 +580,7 @@ export class Visual implements IVisual {
         // Con barra de desplazamiento el ancho util se reduce, o el eje queda descentrado.
         const sbw = scroll ? 14 : 0;
         const innerW = Math.max(w - sbw, 40);
-        const barLeft = qW + s.labels.labelGap;
+        const barLeft = leftW + s.labels.labelGap;
         const barW = Math.max(40, innerW - barLeft - boxW - 10);
         const centre = barLeft + barW / 2;
 
@@ -604,7 +606,46 @@ export class Visual implements IVisual {
             this.svg.appendChild(bl);
         }
 
-        let lastGroup: string | null = null;
+        // Los bloques se pintan por TRAMOS, antes que las filas: un fondo por bloque y su
+        // etiqueta centrada en el tramo. Pintarlo fila a fila era lo que hacia que la
+        // etiqueta se repitiera y que aquello no pareciera una tabla.
+        if (hayBloques) {
+            const pal: any = (this.host as any).colorPalette;
+            let i = 0;
+            while (i < this.rows.length) {
+                const nombre = this.rows[i].group ?? "";
+                let j = i;
+                while (j + 1 < this.rows.length && (this.rows[j + 1].group ?? "") === nombre) { j++; }
+                const yIni = topPad + i * rowH;
+                const alto = (j - i + 1) * rowH;
+
+                if (s.qtable.blockFill && s.qtable.blockOpacity > 0) {
+                    const bg = el("rect");
+                    bg.setAttribute("x", "0"); bg.setAttribute("y", String(yIni));
+                    bg.setAttribute("width", String(leftW)); bg.setAttribute("height", String(alto));
+                    bg.setAttribute("fill", pal?.getColor?.(nombre)?.value ?? "#5E81AC");
+                    bg.setAttribute("opacity", String(s.qtable.blockOpacity / 100));
+                    this.svg.appendChild(bg);
+                }
+                if (blockW > 0) {
+                    const bt = text(6, yIni + alto / 2 + s.qtable.blockFontSize * 0.36,
+                        ellipsis(nombre, blockW - 10, s.qtable.blockFontSize),
+                        s.qtable.blockFontSize, s.qtable.blockColor, "start");
+                    bt.setAttribute("font-weight", "600");
+                    bt.setAttribute("font-family", s.qtable.blockFontFamily);
+                    this.svg.appendChild(bt);
+                }
+                if (s.qtable.separator && j + 1 < this.rows.length) {
+                    const sep = el("line");
+                    sep.setAttribute("x1", "0"); sep.setAttribute("x2", String(innerW));
+                    sep.setAttribute("y1", String(yIni + alto)); sep.setAttribute("y2", String(yIni + alto));
+                    sep.setAttribute("stroke", "#D8DEE9"); sep.setAttribute("stroke-width", "1");
+                    this.svg.appendChild(sep);
+                }
+                i = j + 1;
+            }
+        }
+
         this.rows.forEach((row, ri) => {
             const y = topPad + ri * rowH;
             // El alto de barra es la fila MENOS la separación: con separación 0 las barras
@@ -613,15 +654,13 @@ export class Visual implements IVisual {
             const barH = Math.max(4, rowH - s.layout.rowGap);
             const by = y + (rowH - barH) / 2;
 
-            if (row.group && row.group !== lastGroup) {
-                const gt = text(4, y + rowH * 0.42, row.group, s.labels.fontSize, "#4C566A", "start");
-                gt.setAttribute("font-weight", "600");
-                this.svg.appendChild(gt);
-                lastGroup = row.group;
-            }
-
-            const qt = text(qW, y + rowH * 0.62, ellipsis(row.question, qW, s.labels.fontSize),
-                            s.labels.fontSize, s.labels.textColor, "end");
+            const izq = s.qtable.questionAlign === "left";
+            const qt = text(izq ? blockW + 6 : leftW - 6,
+                            y + rowH / 2 + s.qtable.questionFontSize * 0.36,
+                            ellipsis(row.question, qW - 12, s.qtable.questionFontSize),
+                            s.qtable.questionFontSize, s.qtable.questionColor,
+                            izq ? "start" : "end");
+            qt.setAttribute("font-family", s.qtable.questionFontFamily);
             this.svg.appendChild(qt);
 
             // Izquierda desde el centro hacia fuera, para que el neutro quede pegado al eje.

@@ -76,6 +76,48 @@ class ColorsCard extends Card {
     slices = [this.fill, this.negativeColor, this.neutralColor, this.positiveColor];
 }
 
+class QuestionTableCard extends Card {
+    blockWidth = new formattingSettings.NumUpDown({
+        name: "blockWidth", displayNameKey: "Prop_QtableBlockWidth", value: 14
+    });
+    blockFill = new formattingSettings.ToggleSwitch({
+        name: "blockFill", displayNameKey: "Prop_QtableBlockFill", value: true
+    });
+    blockOpacity = new formattingSettings.NumUpDown({
+        name: "blockOpacity", displayNameKey: "Prop_QtableBlockOpacity", value: 14
+    });
+    blockFontFamily = new formattingSettings.FontPicker({
+        name: "blockFontFamily", displayNameKey: "Prop_QtableBlockFontFamily", value: "Segoe UI"
+    });
+    blockFontSize = new formattingSettings.NumUpDown({
+        name: "blockFontSize", displayNameKey: "Prop_QtableBlockFontSize", value: 11
+    });
+    blockColor = new formattingSettings.ColorPicker({
+        name: "blockColor", displayNameKey: "Prop_QtableBlockColor", value: { value: "#2E3440" }
+    });
+    questionAlign = new formattingSettings.AutoDropdown({
+        name: "questionAlign", displayNameKey: "Prop_QtableQuestionAlign", value: "left"
+    });
+    questionFontFamily = new formattingSettings.FontPicker({
+        name: "questionFontFamily", displayNameKey: "Prop_QtableQuestionFontFamily", value: "Segoe UI"
+    });
+    questionFontSize = new formattingSettings.NumUpDown({
+        name: "questionFontSize", displayNameKey: "Prop_QtableQuestionFontSize", value: 10
+    });
+    questionColor = new formattingSettings.ColorPicker({
+        name: "questionColor", displayNameKey: "Prop_QtableQuestionColor", value: { value: "#3B4252" }
+    });
+    separator = new formattingSettings.ToggleSwitch({
+        name: "separator", displayNameKey: "Prop_QtableSeparator", value: true
+    });
+    name = "qtable";
+    displayNameKey = "Obj_Qtable";
+    slices = [this.blockWidth, this.blockFill, this.blockOpacity, this.blockFontFamily,
+              this.blockFontSize, this.blockColor, this.questionAlign,
+              this.questionFontFamily, this.questionFontSize, this.questionColor,
+              this.separator];
+}
+
 class LabelsCard extends Card {
     showValues = new formattingSettings.ToggleSwitch({
         name: "showValues", displayNameKey: "Prop_LabelsShowValues", value: true
@@ -167,13 +209,14 @@ class LegendCard extends Card {
 export class LikertFormattingModel extends Model {
     scale = new ScaleCard();
     colors = new ColorsCard();
+    qtable = new QuestionTableCard();
     labels = new LabelsCard();
     boxes = new BoxesCard();
     benchmark = new BenchmarkCard();
     layout = new LayoutCard();
     legend = new LegendCard();
-    cards = [this.scale, this.colors, this.labels, this.boxes, this.benchmark,
-             this.layout, this.legend];
+    cards = [this.scale, this.colors, this.qtable, this.labels, this.boxes,
+             this.benchmark, this.layout, this.legend];
 }
 
 // ── Objeto plano para el render ──────────────────────────────────────────────
@@ -183,6 +226,10 @@ export class LikertFormattingModel extends Model {
 export interface LikertSettings {
     scale: { negativeCount: number; neutralMode: "split" | "right" | "exclude"; asPercent: boolean };
     colors: { negativeColor: string; positiveColor: string; neutralColor: string };
+    qtable: { blockWidth: number; blockFill: boolean; blockOpacity: number;
+              blockFontFamily: string; blockFontSize: number; blockColor: string;
+              questionAlign: "left" | "right"; questionFontFamily: string;
+              questionFontSize: number; questionColor: string; separator: boolean };
     labels: { showValues: boolean; minSegment: number; decimals: number;
               questionWidth: number; labelGap: number; fontSize: number; textColor: string };
     boxes: { show: boolean; size: number; showNps: boolean };
@@ -205,6 +252,19 @@ export function toSettings(m: LikertFormattingModel): LikertSettings {
             negativeColor: m.colors.negativeColor.value?.value ?? "#BF616A",
             neutralColor:  m.colors.neutralColor.value?.value  ?? "#D8DEE9",
             positiveColor: m.colors.positiveColor.value?.value ?? "#5E81AC",
+        },
+        qtable: {
+            blockWidth:         clamp(m.qtable.blockWidth.value, 0, 40, 14),
+            blockFill:          !!m.qtable.blockFill.value,
+            blockOpacity:       clamp(m.qtable.blockOpacity.value, 0, 100, 14),
+            blockFontFamily:    String(m.qtable.blockFontFamily.value || "Segoe UI"),
+            blockFontSize:      clamp(m.qtable.blockFontSize.value, 7, 28, 11),
+            blockColor:         m.qtable.blockColor.value?.value ?? "#2E3440",
+            questionAlign:      String(m.qtable.questionAlign.value ?? "left") as any,
+            questionFontFamily: String(m.qtable.questionFontFamily.value || "Segoe UI"),
+            questionFontSize:   clamp(m.qtable.questionFontSize.value, 7, 28, 10),
+            questionColor:      m.qtable.questionColor.value?.value ?? "#3B4252",
+            separator:          !!m.qtable.separator.value,
         },
         labels: {
             showValues:    !!m.labels.showValues.value,
