@@ -15,7 +15,7 @@ the report.
 | Well | Type | What it does |
 |---|---|---|
 | Question | Grouping | One diverging bar per value |
-| Response | Grouping | The scale point. **Sort this column in the model** to fix the order of the scale |
+| Response | Grouping | The scale point: Strongly disagree … Strongly agree |
 | Value | Measure | Count of responses, or any measure to distribute across the scale |
 | Scale order | Measure | Numeric rank per scale point, 1 = leftmost. This is what fixes the order of the scale |
 | Group [Pro] | Grouping | Block the questions belong to, drawn as a labelled section |
