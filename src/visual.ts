@@ -58,6 +58,8 @@ interface QuestionRow {
     posShare: number;
     topBox: number;
     bottomBox: number;
+    /** Puntuacion media de la pregunta sobre la escala. */
+    mean: number;
     selectionId: ISelectionId;
     /** Identidad del BLOQUE, para el color por bloque y su regla. */
     groupSelectionId: ISelectionId | null;
@@ -101,7 +103,10 @@ export class Visual implements IVisual {
     private responseLabels: string[] = [];
     private responseColors: string[] = [];
     /** Bloques presentes, para emitir un selector de color por cada uno. */
-    private blocks: Array<{ name: string; sid: ISelectionId | null; color: string }> = [];
+    private blocks: Array<{ name: string; sid: ISelectionId | null; color: string;
+                            mean: number; positive: number; nps: number }> = [];
+    /** Puntuacion numerica de cada punto de escala: la del pozo, o su posicion. */
+    private responseScores: number[] = [];
     private focusIndex = -1;
 
     constructor(options: VisualConstructorOptions) {
@@ -372,6 +377,18 @@ export class Visual implements IVisual {
         // Orden de la escala: el de los grupos, que sigue la ordenación del modelo.
         const kept = groups.slice(0, FREE_MAX_RESPONSES);
         this.responseLabels = kept.map(g => String(g.name ?? ""));
+        // La puntuacion sale del pozo Scale order si esta relleno; si no, de la posicion.
+        // Sin eso, una media sobre una escala sin numeros no significaria nada.
+        this.responseScores = kept.map((g, i) => {
+            const col = (g.values as any[]).find(v => v?.source?.roles?.order);
+            if (col) {
+                for (let k = 0; k < (col.values?.length ?? 0); k++) {
+                    const v = col.values[k];
+                    if (v !== null && v !== undefined && isFinite(Number(v))) { return Number(v); }
+                }
+            }
+            return i + 1;
+        });
         this.responseColors = this.scaleColors(kept.length, dv);
 
         const n = qCol.values.length;
@@ -432,6 +449,9 @@ export class Visual implements IVisual {
             const bottom = segs.filter(sg => sg.responseIndex < boxN)
                                .reduce((a, sg) => a + sg.share, 0);
 
+            const media = total
+                ? segs.reduce((a, sg) => a + (this.responseScores[sg.responseIndex] ?? 0) * sg.value, 0) / total
+                : 0;
             this.rows.push({
                 question: String(qCol.values[i] ?? ""),
                 group: gCol && proNow ? String(gCol.values[i] ?? "") : null,
@@ -445,7 +465,7 @@ export class Visual implements IVisual {
                     ? (((gCol as any).objects?.[i]?.qtable?.blockFillColor?.solid?.color) || null)
                     : null,
                 total, segments: segs, negShare: neg, posShare: pos,
-                topBox: top, bottomBox: bottom,
+                topBox: top, bottomBox: bottom, mean: media,
                 selectionId: this.host.createSelectionIdBuilder().withCategory(qCol, i).createSelectionId()
             });
         }
@@ -462,10 +482,17 @@ export class Visual implements IVisual {
             const n = r.group;
             if (n === null || vistos.has(n)) { return; }
             vistos.set(n, this.blocks.length);
+            // Los agregados del bloque se ponderan por respuestas, no por preguntas: una
+            // pregunta con 95 respuestas no puede pesar lo mismo que otra con 250.
+            const suyas = this.rows.filter(x => x.group === n);
+            const peso = suyas.reduce((a, x) => a + x.total, 0) || 1;
             this.blocks.push({
                 name: n,
                 sid: r.groupSelectionId,
-                color: r.groupColor ?? pal?.getColor?.(n)?.value ?? "#5E81AC"
+                color: r.groupColor ?? pal?.getColor?.(n)?.value ?? "#5E81AC",
+                mean:     suyas.reduce((a, x) => a + x.mean * x.total, 0) / peso,
+                positive: suyas.reduce((a, x) => a + x.posShare * x.total, 0) / peso,
+                nps:      suyas.reduce((a, x) => a + (x.topBox - x.bottomBox) * x.total, 0) / peso,
             });
         });
     }
@@ -665,8 +692,42 @@ export class Visual implements IVisual {
                     this.svg.appendChild(bg);
                 }
                 if (blockW > 0) {
-                    const bt = text(6, yIni + alto / 2 + s.qtable.blockFontSize * 0.36,
-                        ellipsis(nombre, blockW - 10, s.qtable.blockFontSize),
+                    const b = this.blocks.find(x => x.name === nombre);
+                    const cyB = yIni + alto / 2;
+                    // El circulo solo cabe si deja sitio al nombre: por debajo de eso se
+                    // omite, antes que superponer una cifra sobre el texto del bloque.
+                    const d = Math.min(s.qtable.statSize, alto - 6, blockW * 0.55);
+                    const hayCirculo = s.qtable.statShow && b && d >= 16;
+                    let nx = 6;
+
+                    if (hayCirculo) {
+                        const c = el("circle");
+                        c.setAttribute("cx", String(6 + d / 2));
+                        c.setAttribute("cy", String(cyB));
+                        c.setAttribute("r", String(d / 2));
+                        c.setAttribute("fill", s.qtable.statFill);
+                        c.setAttribute("stroke", "#2E3440");
+                        c.setAttribute("stroke-width", "1.5");
+                        c.setAttribute("aria-hidden", "true");
+                        this.svg.appendChild(c);
+
+                        const v = s.qtable.statMode === "positive" ? b.positive * 100
+                                : s.qtable.statMode === "nps"      ? b.nps * 100
+                                :                                    b.mean;
+                        const etq = s.qtable.statMode === "mean" ? v.toFixed(1)
+                                  : s.qtable.statMode === "positive" ? `${v.toFixed(0)}%`
+                                  : `${v >= 0 ? "+" : ""}${v.toFixed(0)}`;
+                        const fs = Math.max(8, Math.min(d * 0.38, s.qtable.blockFontSize * 1.4));
+                        const ct = text(6 + d / 2, cyB + fs * 0.36, etq, fs,
+                                        readable(s.qtable.statFill), "middle");
+                        ct.setAttribute("font-weight", "700");
+                        ct.setAttribute("font-family", s.qtable.blockFontFamily);
+                        this.svg.appendChild(ct);
+                        nx = 6 + d + 8;
+                    }
+
+                    const bt = text(nx, cyB + s.qtable.blockFontSize * 0.36,
+                        ellipsis(nombre, blockW - nx - 4, s.qtable.blockFontSize),
                         s.qtable.blockFontSize, s.qtable.blockColor, "start");
                     bt.setAttribute("font-weight", "600");
                     bt.setAttribute("font-family", s.qtable.blockFontFamily);

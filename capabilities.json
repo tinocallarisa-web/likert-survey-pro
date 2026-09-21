@@ -273,6 +273,53 @@
             }
           }
         },
+        "statShow": {
+          "displayName": "Show block score",
+          "displayNameKey": "Prop_QtableStatShow",
+          "description": "A circle in the block column with the block's summary figure.",
+          "type": {
+            "bool": true
+          }
+        },
+        "statMode": {
+          "displayName": "Block score",
+          "displayNameKey": "Prop_QtableStatMode",
+          "description": "Mean score uses the Scale order values, or the position on the scale when that well is empty. % positive is the share right of the centre. NPS is top box minus bottom box.",
+          "type": {
+            "enumeration": [
+              {
+                "value": "mean",
+                "displayName": "Mean score"
+              },
+              {
+                "value": "positive",
+                "displayName": "% positive"
+              },
+              {
+                "value": "nps",
+                "displayName": "NPS"
+              }
+            ]
+          }
+        },
+        "statSize": {
+          "displayName": "Circle size (px)",
+          "displayNameKey": "Prop_QtableStatSize",
+          "type": {
+            "numeric": true
+          }
+        },
+        "statFill": {
+          "displayName": "Circle color",
+          "displayNameKey": "Prop_QtableStatFill",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
         "questionAlign": {
           "displayName": "Question alignment",
           "displayNameKey": "Prop_QtableQuestionAlign",

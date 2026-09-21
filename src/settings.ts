@@ -95,6 +95,18 @@ class QuestionTableCard extends Card {
     blockColor = new formattingSettings.ColorPicker({
         name: "blockColor", displayNameKey: "Prop_QtableBlockColor", value: { value: "#2E3440" }
     });
+    statShow = new formattingSettings.ToggleSwitch({
+        name: "statShow", displayNameKey: "Prop_QtableStatShow", value: true
+    });
+    statMode = new formattingSettings.AutoDropdown({
+        name: "statMode", displayNameKey: "Prop_QtableStatMode", value: "mean"
+    });
+    statSize = new formattingSettings.NumUpDown({
+        name: "statSize", displayNameKey: "Prop_QtableStatSize", value: 34
+    });
+    statFill = new formattingSettings.ColorPicker({
+        name: "statFill", displayNameKey: "Prop_QtableStatFill", value: { value: "#FFFFFF" }
+    });
     questionAlign = new formattingSettings.AutoDropdown({
         name: "questionAlign", displayNameKey: "Prop_QtableQuestionAlign", value: "left"
     });
@@ -113,7 +125,9 @@ class QuestionTableCard extends Card {
     name = "qtable";
     displayNameKey = "Obj_Qtable";
     slices = [this.blockWidth, this.blockFill, this.blockOpacity, this.blockFontFamily,
-              this.blockFontSize, this.blockColor, this.questionAlign,
+              this.blockFontSize, this.blockColor,
+              this.statShow, this.statMode, this.statSize, this.statFill,
+              this.questionAlign,
               this.questionFontFamily, this.questionFontSize, this.questionColor,
               this.separator];
 }
@@ -256,6 +270,8 @@ export interface LikertSettings {
     colors: { negativeColor: string; positiveColor: string; neutralColor: string };
     qtable: { blockWidth: number; blockFill: boolean; blockOpacity: number;
               blockFontFamily: string; blockFontSize: number; blockColor: string;
+              statShow: boolean; statMode: "mean" | "positive" | "nps";
+              statSize: number; statFill: string;
               questionAlign: "left" | "right"; questionFontFamily: string;
               questionFontSize: number; questionColor: string; separator: boolean };
     labels: { showValues: boolean; minSegment: number; decimals: number;
@@ -289,6 +305,10 @@ export function toSettings(m: LikertFormattingModel): LikertSettings {
             blockFontFamily:    String(m.qtable.blockFontFamily.value || "Segoe UI"),
             blockFontSize:      clamp(m.qtable.blockFontSize.value, 7, 28, 11),
             blockColor:         m.qtable.blockColor.value?.value ?? "#2E3440",
+            statShow:           !!m.qtable.statShow.value,
+            statMode:           String(m.qtable.statMode.value ?? "mean") as any,
+            statSize:           clamp(m.qtable.statSize.value, 16, 90, 34),
+            statFill:           m.qtable.statFill.value?.value ?? "#FFFFFF",
             questionAlign:      String(m.qtable.questionAlign.value ?? "left") as any,
             questionFontFamily: String(m.qtable.questionFontFamily.value || "Segoe UI"),
             questionFontSize:   clamp(m.qtable.questionFontSize.value, 7, 28, 10),
