@@ -232,6 +232,18 @@
             "numeric": true
           }
         },
+        "blockFillColor": {
+          "displayName": "Block color",
+          "displayNameKey": "Prop_QtableBlockFillColor",
+          "description": "Colour of a block's background. Left alone it takes the report theme. With a licence it also accepts a rule (fx) over a measure, turning the block column into a small heatmap.",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
         "blockFontFamily": {
           "displayName": "Block font",
           "displayNameKey": "Prop_QtableBlockFontFamily",

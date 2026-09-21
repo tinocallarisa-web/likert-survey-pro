@@ -23,7 +23,10 @@ First version.
 - High contrast through `host.colorPalette`.
 - Landing page, and `host.allowInteractions` honoured.
 - English and Spanish, with every data role, card and property carrying its `displayNameKey`.
-- **Pro**: Top/Bottom box, NPS (top minus bottom), benchmark line and question groups.
+- **Pro**: Top/Bottom box, NPS (top minus bottom), benchmark line, question groups and
+  **conditional formatting on the block background** — a rule over a measure turns the block
+  column into a small heatmap. The manual colours keep coming from the report theme and stay
+  free; what Pro adds is the rule, so the fx button only appears with a licence.
   Without a licence, in edit mode, they render under a "Pro preview" watermark.
 
 ### Certification

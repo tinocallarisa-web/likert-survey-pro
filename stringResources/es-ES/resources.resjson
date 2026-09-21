@@ -20,6 +20,7 @@
   "Prop_QtableBlockWidth": "Ancho de la columna de bloque (%)",
   "Prop_QtableBlockFill": "Sombrear cada bloque",
   "Prop_QtableBlockOpacity": "Intensidad del sombreado (%)",
+  "Prop_QtableBlockFillColor": "Color del bloque",
   "Prop_QtableBlockFontFamily": "Fuente del bloque",
   "Prop_QtableBlockFontSize": "Tamaño del texto de bloque",
   "Prop_QtableBlockColor": "Color del texto de bloque",

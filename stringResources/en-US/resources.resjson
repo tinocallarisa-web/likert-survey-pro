@@ -20,6 +20,7 @@
   "Prop_QtableBlockWidth": "Block column width (%)",
   "Prop_QtableBlockFill": "Shade each block",
   "Prop_QtableBlockOpacity": "Shading strength (%)",
+  "Prop_QtableBlockFillColor": "Block color",
   "Prop_QtableBlockFontFamily": "Block font",
   "Prop_QtableBlockFontSize": "Block text size",
   "Prop_QtableBlockColor": "Block text color",

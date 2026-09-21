@@ -25,7 +25,7 @@ import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
 import {
     LikertSettings, LikertFormattingModel, toSettings, defaultSettings, freeSettings,
-    SP_IDENTIFIER, matchesPlan, FREE_MAX_RESPONSES
+    makeBlockRuleSlice, SP_IDENTIFIER, matchesPlan, FREE_MAX_RESPONSES
 } from "./settings";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -37,6 +37,7 @@ const PRO_BOXES = "Top/Bottom box";
 const PRO_NPS = "NPS";
 const PRO_BENCHMARK = "the benchmark line";
 const PRO_GROUPS = "question groups";
+const PRO_BLOCK_CF = "conditional formatting on blocks";
 
 interface Segment {
     responseIndex: number;
@@ -59,6 +60,10 @@ interface QuestionRow {
     topBox: number;
     bottomBox: number;
     selectionId: ISelectionId;
+    /** Identidad del BLOQUE, para el color por bloque y su regla. */
+    groupSelectionId: ISelectionId | null;
+    /** Color del bloque puesto a mano o por regla; null = el del tema. */
+    groupColor: string | null;
 }
 
 export class Visual implements IVisual {
@@ -346,6 +351,7 @@ export class Visual implements IVisual {
         if (raw.boxes.showNps) { w.push(PRO_NPS); }
         if (raw.benchmark.show) { w.push(PRO_BENCHMARK); }
         if (dv.categorical?.categories?.some(c => c.source.roles?.["group"])) { w.push(PRO_GROUPS); }
+        if (this.rows.some(r => r.groupColor !== null)) { w.push(PRO_BLOCK_CF); }
         this.attemptedPro = this.isPro ? [] : w;
     }
 
@@ -429,6 +435,17 @@ export class Visual implements IVisual {
             this.rows.push({
                 question: String(qCol.values[i] ?? ""),
                 group: gCol && proNow ? String(gCol.values[i] ?? "") : null,
+                groupSelectionId: gCol
+                    ? this.host.createSelectionIdBuilder().withCategory(gCol, i).createSelectionId()
+                    : null,
+                // El color del bloque llega en los objects de su propia columna. Se mira
+                // tambien la de preguntas porque, segun como resuelva la regla, el color
+                // puede aterrizar ahi: leer los dos sitios sale gratis y evita un viaje.
+                groupColor: (gCol && (this.isPro || this.proPreview))
+                    ? (((gCol as any).objects?.[i]?.qtable?.blockFillColor?.solid?.color)
+                        || ((qCol as any).objects?.[i]?.qtable?.blockFillColor?.solid?.color)
+                        || null)
+                    : null,
                 total, segments: segs, negShare: neg, posShare: pos,
                 topBox: top, bottomBox: bottom,
                 selectionId: this.host.createSelectionIdBuilder().withCategory(qCol, i).createSelectionId()
@@ -623,7 +640,9 @@ export class Visual implements IVisual {
                     const bg = el("rect");
                     bg.setAttribute("x", "0"); bg.setAttribute("y", String(yIni));
                     bg.setAttribute("width", String(leftW)); bg.setAttribute("height", String(alto));
-                    bg.setAttribute("fill", pal?.getColor?.(nombre)?.value ?? "#5E81AC");
+                    // La regla gana sobre el color del tema; sin regla, el tema manda.
+                    bg.setAttribute("fill", this.rows[i].groupColor
+                        ?? pal?.getColor?.(nombre)?.value ?? "#5E81AC");
                     bg.setAttribute("opacity", String(s.qtable.blockOpacity / 100));
                     this.svg.appendChild(bg);
                 }
@@ -814,6 +833,13 @@ export class Visual implements IVisual {
      * apagaría solo al activarlo y parecería roto.
      */
     public getFormattingModel(): powerbi.visuals.FormattingModel {
+        // El fx del color de bloque solo se ofrece con licencia o en vista previa. Un boton
+        // que no hace nada es peor que no tenerlo: el usuario crea la regla y no pasa nada.
+        const card: any = this.formattingModel.qtable;
+        card.slices = card.slices.filter((sl: any) => sl.name !== "blockFillColor");
+        if (this.isPro || this.proPreview) {
+            card.slices.splice(3, 0, makeBlockRuleSlice());
+        }
         return this.formattingService.buildFormattingModel(this.formattingModel);
     }
 }

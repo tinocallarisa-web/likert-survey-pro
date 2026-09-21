@@ -206,6 +206,22 @@ class LegendCard extends Card {
     slices = [this.show, this.position];
 }
 
+/**
+ * El control que genera el boton fx del color de bloque. Se crea aparte porque SOLO se
+ * anade al panel con licencia: emitirlo siempre daria un fx que no hace nada en Free.
+ * Selector comodin, que es lo que hace que Power BI materialice la regla en cada bloque.
+ */
+export function makeBlockRuleSlice(): formattingSettings.ColorPicker {
+    return new formattingSettings.ColorPicker({
+        name: "blockFillColor", displayNameKey: "Prop_QtableBlockFillColor",
+        value: { value: "#5E81AC" },
+        selector: dataViewWildcard.createDataViewWildcardSelector(
+            dataViewWildcard.DataViewWildcardMatchingOption.InstancesAndTotals),
+        altConstantSelector: null,
+        instanceKind: CONSTANT_OR_RULE
+    });
+}
+
 export class LikertFormattingModel extends Model {
     scale = new ScaleCard();
     colors = new ColorsCard();
