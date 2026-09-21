@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1366" height="768" viewBox="0 0 1280 720">
+  <rect width="1280" height="720" fill="#FFFFFF"/>
+
+  <!-- Cabecera -->
+  <rect x="0" y="0" width="1280" height="104" fill="#2E3440"/>
+  <!-- El icono del sistema TCViz, copiado de test_visuales/iconos/icons.js sin retocar:
+       si diverge, la ficha y el panel de Power BI dejan de parecer el mismo producto. -->
+  <g transform="translate(48,20) scale(0.213)">
+    <rect x="10" y="10" width="280" height="280" rx="54" fill="#ECEFF4" stroke="#D8DEE9" stroke-width="4"/>
+    <g stroke="#2E3440" stroke-width="12" stroke-linejoin="round">
+      <rect x="96"  y="78"  width="54" height="42" fill="#88C0D0"/>
+      <rect x="150" y="78"  width="78" height="42" fill="#A3BE8C"/>
+      <rect x="72"  y="136" width="78" height="42" fill="#88C0D0"/>
+      <rect x="150" y="136" width="48" height="42" fill="#5E81AC"/>
+      <rect x="110" y="194" width="40" height="42" fill="#88C0D0"/>
+      <rect x="150" y="194" width="86" height="42" fill="#5E81AC"/>
+    </g>
+    <path d="M150 62 V250" fill="none" stroke="#2E3440" stroke-width="12" stroke-linecap="round"/>
+  </g>
+  <text x="140" y="52" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="34" fill="#FFFFFF" font-weight="700">Likert Survey Pro</text>
+  <text x="140" y="82" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="18" fill="#88C0D0">Diverging stacked bars for Likert and survey data</text>
+  <text x="1232" y="68" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="22" fill="#D8DEE9" text-anchor="end" font-weight="600">TCViz</text>
+
+  <!-- Izquierda: el problema -->
+  <text x="48" y="158" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="15" fill="#4C566A" font-weight="700">A NORMAL STACKED BAR</text>
+  <rect x="64.0" y="186" width="19.2" height="30" fill="#BF616A"/><rect x="83.2" y="186" width="38.4" height="30" fill="#cca0aa"/><rect x="121.6" y="186" width="62.4" height="30" fill="#D8DEE9"/><rect x="184.0" y="186" width="216.0" height="30" fill="#becebb"/><rect x="400.0" y="186" width="144.0" height="30" fill="#A3BE8C"/><rect x="64.0" y="248" width="134.4" height="30" fill="#BF616A"/><rect x="198.4" y="248" width="163.2" height="30" fill="#cca0aa"/><rect x="361.6" y="248" width="86.4" height="30" fill="#D8DEE9"/><rect x="448.0" y="248" width="72.0" height="30" fill="#becebb"/><rect x="520.0" y="248" width="24.0" height="30" fill="#A3BE8C"/><rect x="64.0" y="310" width="57.6" height="30" fill="#BF616A"/><rect x="121.6" y="310" width="105.6" height="30" fill="#cca0aa"/><rect x="227.2" y="310" width="100.8" height="30" fill="#D8DEE9"/><rect x="328.0" y="310" width="144.0" height="30" fill="#becebb"/><rect x="472.0" y="310" width="72.0" height="30" fill="#A3BE8C"/><rect x="64.0" y="372" width="86.4" height="30" fill="#BF616A"/><rect x="150.4" y="372" width="115.2" height="30" fill="#cca0aa"/><rect x="265.6" y="372" width="96.0" height="30" fill="#D8DEE9"/><rect x="361.6" y="372" width="129.6" height="30" fill="#becebb"/><rect x="491.2" y="372" width="52.8" height="30" fill="#A3BE8C"/><line x1="64" y1="176" x2="64" y2="414" stroke="#4C566A" stroke-width="2"/>
+  <text x="48" y="452" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="19" fill="#2E3440" font-weight="600">Every bar starts at zero.</text>
+  <text x="48" y="480" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="17" fill="#4C566A">Which of these four questions is the worst?</text>
+  <text x="48" y="504" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="17" fill="#4C566A">You have to read the numbers to find out.</text>
+
+  <!-- Separador -->
+  <line x1="620" y1="150" x2="620" y2="520" stroke="#D8DEE9" stroke-width="2"/>
+
+  <!-- Derecha: la solucion -->
+  <text x="668" y="158" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="15" fill="#5E81AC" font-weight="700">LIKERT SURVEY PRO</text>
+  <rect x="844.7" y="186" width="15.2" height="30" fill="#BF616A"/><rect x="859.9" y="186" width="30.4" height="30" fill="#cca0aa"/><rect x="890.3" y="186" width="49.4" height="30" fill="#D8DEE9"/><rect x="939.7" y="186" width="171.0" height="30" fill="#becebb"/><rect x="1110.7" y="186" width="114.0" height="30" fill="#A3BE8C"/><rect x="645.2" y="248" width="106.4" height="30" fill="#BF616A"/><rect x="751.6" y="248" width="129.2" height="30" fill="#cca0aa"/><rect x="880.8" y="248" width="68.4" height="30" fill="#D8DEE9"/><rect x="949.2" y="248" width="57.0" height="30" fill="#becebb"/><rect x="1006.2" y="248" width="19.0" height="30" fill="#A3BE8C"/><rect x="745.9" y="310" width="45.6" height="30" fill="#BF616A"/><rect x="791.5" y="310" width="83.6" height="30" fill="#cca0aa"/><rect x="875.1" y="310" width="79.8" height="30" fill="#D8DEE9"/><rect x="954.9" y="310" width="114.0" height="30" fill="#becebb"/><rect x="1068.9" y="310" width="57.0" height="30" fill="#A3BE8C"/><rect x="717.4" y="372" width="68.4" height="30" fill="#BF616A"/><rect x="785.8" y="372" width="91.2" height="30" fill="#cca0aa"/><rect x="877.0" y="372" width="76.0" height="30" fill="#D8DEE9"/><rect x="953.0" y="372" width="102.6" height="30" fill="#becebb"/><rect x="1055.6" y="372" width="41.8" height="30" fill="#A3BE8C"/><line x1="915" y1="176" x2="915" y2="414" stroke="#2E3440" stroke-width="3"/>
+  <text x="668" y="452" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="19" fill="#2E3440" font-weight="600">Centred on the neutral response.</text>
+  <text x="668" y="480" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="17" fill="#4C566A">Disagreement grows left, agreement right,</text>
+  <text x="668" y="504" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="17" fill="#4C566A">from one shared axis. You read it at a glance.</text>
+
+  <!-- Franja inferior -->
+  <rect x="0" y="548" width="1280" height="172" fill="#ECEFF4"/>
+  <rect x="48" y="580" width="380" height="76" rx="10" fill="#FFFFFF" stroke="#D8DEE9" stroke-width="2"/><rect x="48" y="580" width="6" height="76" rx="3" fill="#A3BE8C"/><text x="70" y="611" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="17" fill="#2E3440" font-weight="600">Free</text><text x="70" y="636" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="15" fill="#4C566A">The complete diverging scale. Nothing hidden.</text>
+  <rect x="450" y="580" width="400" height="76" rx="10" fill="#FFFFFF" stroke="#D8DEE9" stroke-width="2"/><rect x="450" y="580" width="6" height="76" rx="3" fill="#5E81AC"/><text x="472" y="611" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="17" fill="#2E3440" font-weight="600">Pro</text><text x="472" y="636" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="15" fill="#4C566A">Top/Bottom box · NPS · Benchmark · Groups</text>
+  <rect x="872" y="580" width="360" height="76" rx="10" fill="#FFFFFF" stroke="#D8DEE9" stroke-width="2"/><rect x="872" y="580" width="6" height="76" rx="3" fill="#88C0D0"/><text x="894" y="611" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="17" fill="#2E3440" font-weight="600">No network access</text><text x="894" y="636" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="15" fill="#4C566A">privileges: []. No data leaves the report.</text>
+  <text x="640" y="692" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="15" fill="#4C566A" text-anchor="middle">tcviz.com</text>
+</svg>
