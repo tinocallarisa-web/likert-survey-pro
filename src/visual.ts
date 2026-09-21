@@ -65,6 +65,10 @@ export class Visual implements IVisual {
     private host: IVisualHost;
     private root: HTMLElement;
     private svg: SVGSVGElement;
+    /** El area que se desplaza. La leyenda vive fuera para no irse con el scroll. */
+    private scrollHost: HTMLDivElement;
+    private legendHost: HTMLDivElement;
+    private legendSvg: SVGSVGElement;
     private watermarkEl: HTMLDivElement;
     private events: IVisualEventService;
     private selectionManager: ISelectionManager;
@@ -109,9 +113,24 @@ export class Visual implements IVisual {
         this.root.setAttribute("aria-label", "Likert survey chart");
         options.element.appendChild(this.root);
 
+        // Dos capas: la leyenda fija y el grafico desplazable. Si la leyenda se fuera con
+        // el scroll, el usuario perderia la referencia de colores justo al mirar las filas
+        // de abajo, que es cuando mas la necesita.
+        this.scrollHost = document.createElement("div");
+        this.scrollHost.style.cssText = "position:absolute;left:0;right:0;overflow-x:hidden;";
+        this.root.appendChild(this.scrollHost);
+
         this.svg = document.createElementNS(SVG_NS, "svg") as SVGSVGElement;
         this.svg.style.display = "block";
-        this.root.appendChild(this.svg);
+        this.scrollHost.appendChild(this.svg);
+
+        this.legendHost = document.createElement("div");
+        this.legendHost.style.cssText = "position:absolute;left:0;right:0;overflow:hidden;";
+        this.root.appendChild(this.legendHost);
+
+        this.legendSvg = document.createElementNS(SVG_NS, "svg") as SVGSVGElement;
+        this.legendSvg.style.display = "block";
+        this.legendHost.appendChild(this.legendSvg);
 
         // Marca de agua de la vista previa Pro. Blanca con contorno oscuro: un gris
         // translúcido desaparece sobre barras saturadas. No intercepta clics ni entra en
@@ -415,6 +434,25 @@ export class Visual implements IVisual {
                 selectionId: this.host.createSelectionIdBuilder().withCategory(qCol, i).createSelectionId()
             });
         }
+        this.sortRowsByGroup();
+    }
+
+    /**
+     * Agrupar solo tiene sentido si las filas del mismo bloque van juntas: si llegan
+     * intercaladas, el encabezado se repite en casi cada fila y no agrupa nada. Se respeta
+     * el orden de aparicion de los bloques y, dentro de cada uno, el de las preguntas.
+     */
+    private sortRowsByGroup(): void {
+        if (!this.rows.some(r => r.group !== null)) { return; }
+        const orden = new Map<string, number>();
+        this.rows.forEach(r => {
+            const k = r.group ?? "";
+            if (!orden.has(k)) { orden.set(k, orden.size); }
+        });
+        this.rows = this.rows
+            .map((r, i) => ({ r, i, g: orden.get(r.group ?? "") ?? 0 }))
+            .sort((a, b) => a.g - b.g || a.i - b.i)
+            .map(x => x.r);
     }
 
     /**
@@ -427,11 +465,17 @@ export class Visual implements IVisual {
         const rank = (g: any): number | null => {
             const col = (g?.values as any[])?.find(v => v?.source?.roles?.order);
             if (!col) { return null; }
+            // El MINIMO, no el primer valor: si el usuario deja la agregacion en Suma y hay
+            // varias filas por celda, cualquier estadistico se infla, pero el minimo es el
+            // menos sensible y con Minimo/Media/Primero da el valor exacto.
+            let min: number | null = null;
             for (let i = 0; i < (col.values?.length ?? 0); i++) {
                 const v = col.values[i];
-                if (v !== null && v !== undefined && isFinite(Number(v))) { return Number(v); }
+                if (v === null || v === undefined || !isFinite(Number(v))) { continue; }
+                const n = Number(v);
+                if (min === null || n < min) { min = n; }
             }
-            return null;
+            return min;
         };
         const ranks = groups.map(rank);
         if (ranks.every(r => r === null)) { return groups; }
@@ -494,24 +538,47 @@ export class Visual implements IVisual {
 
     private render(w: number, h: number): void {
         this.clearSvg();
-        this.svg.setAttribute("width", String(w));
-        this.svg.setAttribute("height", String(h));
         this.svg.setAttribute("role", "img");
 
         const s = this.settings;
-        const legendH = s.legend.show ? 22 : 0;
-        const topPad = s.legend.position === "top" ? legendH + 6 : 6;
-        const botPad = s.legend.position === "bottom" ? legendH + 6 : 6;
+        const legendH = s.legend.show ? 24 : 0;
+
+        // La leyenda ocupa su franja fuera del area desplazable.
+        this.legendHost.style.display = s.legend.show ? "block" : "none";
+        this.legendHost.style.height = `${legendH}px`;
+        this.legendHost.style.top = s.legend.position === "top" ? "0px" : "";
+        this.legendHost.style.bottom = s.legend.position === "bottom" ? "0px" : "";
+        this.scrollHost.style.top = s.legend.position === "top" ? `${legendH}px` : "0px";
+        this.scrollHost.style.bottom = s.legend.position === "bottom" ? `${legendH}px` : "0px";
+
+        const availH = Math.max(h - legendH, 10);
+        const topPad = 6;
+        const botPad = 6;
         const qW = Math.max(60, Math.min(w * (s.labels.questionWidth / 100), w * 0.6));
         const boxW = (s.boxes.show || s.boxes.showNps) ? 96 : 0;
+
+        // Altura de fila: con scroll se respeta el minimo legible y el lienzo crece; sin
+        // scroll las filas encogen hasta que todo cabe. Recortar filas por abajo no es una
+        // opcion: ocultar datos al redimensionar es causa de rechazo.
+        const fitH = (availH - topPad - botPad) / Math.max(this.rows.length, 1);
+        const rowH = s.layout.enableScroll
+            ? Math.max(s.layout.minRowHeight, Math.min(46, fitH))
+            : Math.max(8, Math.min(46, fitH));
+        const needed = topPad + botPad + rowH * this.rows.length;
+        const scroll = s.layout.enableScroll && needed > availH;
+        this.scrollHost.style.overflowY = scroll ? "auto" : "hidden";
+
+        // Con barra de desplazamiento el ancho util se reduce, o el eje queda descentrado.
+        const sbw = scroll ? 14 : 0;
+        const innerW = Math.max(w - sbw, 40);
         const barLeft = qW + 8;
-        const barW = Math.max(40, w - barLeft - boxW - 10);
+        const barW = Math.max(40, innerW - barLeft - boxW - 10);
         const centre = barLeft + barW / 2;
 
-        const rowsH = Math.max(h - topPad - botPad, 10);
-        const rowH = Math.max(14, Math.min(46, rowsH / Math.max(this.rows.length, 1)));
+        this.svg.setAttribute("width", String(innerW));
+        this.svg.setAttribute("height", String(Math.max(needed, availH)));
 
-        if (s.legend.show) { this.renderLegend(w, s.legend.position === "top" ? 4 : h - legendH + 2); }
+        if (s.legend.show) { this.renderLegend(innerW, legendH); }
 
         // Eje del centro: es lo que hace legible una escala divergente.
         const axis = el("line");
@@ -599,7 +666,11 @@ export class Visual implements IVisual {
         this.restoreFocus();
     }
 
-    private renderLegend(w: number, y: number): void {
+    private renderLegend(w: number, legendH: number): void {
+        while (this.legendSvg.firstChild) { this.legendSvg.removeChild(this.legendSvg.firstChild); }
+        this.legendSvg.setAttribute("width", String(w));
+        this.legendSvg.setAttribute("height", String(legendH));
+        let y = 6;
         let x = 8;
         const fs = Math.max(9, this.settings.labels.fontSize - 1);
         this.responseLabels.forEach((lab, i) => {
@@ -607,9 +678,9 @@ export class Visual implements IVisual {
             sw.setAttribute("x", String(x)); sw.setAttribute("y", String(y));
             sw.setAttribute("width", "11"); sw.setAttribute("height", "11");
             sw.setAttribute("rx", "2"); sw.setAttribute("fill", this.responseColors[i]);
-            this.svg.appendChild(sw);
+            this.legendSvg.appendChild(sw);
             const t = text(x + 15, y + 10, lab, fs, this.settings.labels.textColor, "start");
-            this.svg.appendChild(t);
+            this.legendSvg.appendChild(t);
             x += 15 + lab.length * fs * 0.58 + 12;
             if (x > w - 40) { x = 8; y += 14; }
         });

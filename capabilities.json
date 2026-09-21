@@ -201,6 +201,23 @@
         }
       }
     },
+    "layout": {
+      "displayName": "Layout",
+      "displayNameKey": "Obj_Layout",
+      "properties": {
+        "enableScroll": {
+          "displayName": "Scroll when rows do not fit",
+          "displayNameKey": "Prop_LayoutEnableScroll",
+          "description": "On, rows keep a readable height and the chart scrolls. Off, rows shrink so everything fits — useful when the report is exported to PDF or PowerPoint, where only the visible part is captured.",
+          "type": { "bool": true }
+        },
+        "minRowHeight": {
+          "displayName": "Minimum row height (px)",
+          "displayNameKey": "Prop_LayoutMinRowHeight",
+          "type": { "numeric": true }
+        }
+      }
+    },
     "legend": {
       "displayName": "Legend",
       "displayNameKey": "Obj_Legend",

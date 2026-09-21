@@ -131,6 +131,18 @@ class BenchmarkCard extends Card {
     slices = [this.show, this.value, this.color];
 }
 
+class LayoutCard extends Card {
+    enableScroll = new formattingSettings.ToggleSwitch({
+        name: "enableScroll", displayNameKey: "Prop_LayoutEnableScroll", value: true
+    });
+    minRowHeight = new formattingSettings.NumUpDown({
+        name: "minRowHeight", displayNameKey: "Prop_LayoutMinRowHeight", value: 26
+    });
+    name = "layout";
+    displayNameKey = "Obj_Layout";
+    slices = [this.enableScroll, this.minRowHeight];
+}
+
 class LegendCard extends Card {
     show = new formattingSettings.ToggleSwitch({
         name: "show", displayNameKey: "Prop_LegendShow", value: true
@@ -149,8 +161,10 @@ export class LikertFormattingModel extends Model {
     labels = new LabelsCard();
     boxes = new BoxesCard();
     benchmark = new BenchmarkCard();
+    layout = new LayoutCard();
     legend = new LegendCard();
-    cards = [this.scale, this.colors, this.labels, this.boxes, this.benchmark, this.legend];
+    cards = [this.scale, this.colors, this.labels, this.boxes, this.benchmark,
+             this.layout, this.legend];
 }
 
 // ── Objeto plano para el render ──────────────────────────────────────────────
@@ -164,6 +178,7 @@ export interface LikertSettings {
               questionWidth: number; fontSize: number; textColor: string };
     boxes: { show: boolean; size: number; showNps: boolean };
     benchmark: { show: boolean; value: number; color: string };
+    layout: { enableScroll: boolean; minRowHeight: number };
     legend: { show: boolean; position: "top" | "bottom" };
 }
 
@@ -199,6 +214,10 @@ export function toSettings(m: LikertFormattingModel): LikertSettings {
             show:  !!m.benchmark.show.value,
             value: clamp(m.benchmark.value.value, 0, 100, 70),
             color: m.benchmark.color.value?.value ?? "#4C566A",
+        },
+        layout: {
+            enableScroll: !!m.layout.enableScroll.value,
+            minRowHeight: clamp(m.layout.minRowHeight.value, 12, 80, 26),
         },
         legend: {
             show: !!m.legend.show.value,
