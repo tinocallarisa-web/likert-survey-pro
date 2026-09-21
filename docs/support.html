@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support — Likert Survey Pro | TCViz</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 24px; color: #333; line-height: 1.7; }
+    h1   { color: #0078D4; margin-bottom: 4px; }
+    h2   { margin-top: 2.2em; color: #1a1a2e; border-bottom: 2px solid #e0e0e0; padding-bottom: 6px; }
+    h3   { margin-top: 1.4em; color: #333; }
+    .card { background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 16px 20px; margin: 16px 0; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+    table { border-collapse: collapse; width: 100%; margin: 14px 0; }
+    th, td { border: 1px solid #e0e0e0; padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #f4f6f8; }
+    .badge { display: inline-block; background: #e8433a; color: #fff; font-size: .72rem; padding: 1px 7px; border-radius: 10px; margin-left: 4px; vertical-align: middle; }
+    .badge.free { background: #388e3c; }
+    nav { margin-bottom: 24px; font-size: .95rem; }
+    nav a { color: #0078D4; text-decoration: none; margin-right: 20px; }
+    nav a:hover { text-decoration: underline; }
+    details { border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px 16px; margin-bottom: 10px; background: #fff; }
+    details summary { font-weight: 600; cursor: pointer; color: #1a1a2e; }
+    details p, details ul { margin-top: 10px; }
+    .search { margin: 20px 0 8px; }
+    .search input { width: 100%; box-sizing: border-box; padding: 10px 12px; font: inherit; border: 1px solid #ccc; border-radius: 6px; }
+    .search .count { font-size: .85rem; color: #666; margin-top: 6px; min-height: 1.2em; }
+    footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: .9rem; color: #888; }
+  </style>
+</head>
+<body>
+
+  <h1>Support — Likert Survey Pro</h1>
+  <p><strong>Publisher:</strong> TCViz &nbsp;|&nbsp;
+     <strong>Email:</strong> <a href="mailto:support@tcviz.com">support@tcviz.com</a> &nbsp;|&nbsp;
+     <strong>Version:</strong> 1.0.0.0</p>
+
+  <nav>
+    <a href="changelog.html">Changelog</a>
+    <a href="https://github.com/tinocallarisa-web/likert-survey-pro/issues">Report an issue</a>
+    <a href="https://github.com/tinocallarisa-web/likert-survey-pro/discussions">Discussions</a>
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+  </nav>
+
+  <!-- La página está completa sin JavaScript: el buscador solo oculta, nunca construye. -->
+  <div class="search">
+    <label for="q" style="display:block;font-weight:600;margin-bottom:6px;">Search this page</label>
+    <input id="q" type="search" placeholder="neutral, scale order, NPS, colours, keyboard…"
+           autocomplete="off" aria-describedby="qcount" />
+    <div class="count" id="qcount" aria-live="polite"></div>
+  </div>
+
+  <h2>Quick start</h2>
+  <ol>
+    <li>Drag the survey item into <strong>Question</strong> — one diverging bar per value.</li>
+    <li>Drag the scale point into <strong>Response</strong> (Strongly disagree … Strongly agree).</li>
+    <li>Drag the count of responses into <strong>Value</strong>.</li>
+    <li><strong>Fill in <em>Scale order</em></strong> with a numeric rank, 1 for the leftmost point.
+        This is what fixes the order of the scale.</li>
+    <li>Set <em>Scale → Negative points</em> to how many points count as negative. On a 5-point
+        agreement scale that is 2, and the third point is treated as the neutral one.</li>
+  </ol>
+
+  <div class="card">
+    <strong>The one thing to get right.</strong> Without a defined order, Power BI hands the
+    responses over alphabetically — <em>Agree, Disagree, Neutral, Strongly agree, Strongly
+    disagree</em>. That is not a scale, and a diverging chart built on it means nothing. The
+    visual cannot detect it, so it would draw it wrong without saying so. Use the
+    <em>Scale order</em> well, or sort the response column in the model with
+    <strong>Sort by column</strong>.
+  </div>
+
+  <h2>Field wells</h2>
+  <table>
+    <tr><th>Well</th><th>Type</th><th>What it does</th></tr>
+    <tr><td>Question</td><td>Grouping</td><td>One diverging bar per value</td></tr>
+    <tr><td>Response</td><td>Grouping</td><td>The scale point</td></tr>
+    <tr><td>Value</td><td>Measure</td><td>Count of responses, or any measure to distribute across the scale</td></tr>
+    <tr><td>Scale order</td><td>Measure</td><td>Numeric rank per scale point, 1 = leftmost. Set its aggregation to <strong>Minimum</strong> if your table has one row per respondent</td></tr>
+    <tr><td>Group <span class="badge">Pro</span></td><td>Grouping</td><td>Block the questions belong to, drawn as a shaded section</td></tr>
+    <tr><td>Tooltips</td><td>Measure</td><td>Extra measures in the tooltip</td></tr>
+  </table>
+
+  <h2>Format pane</h2>
+  <table>
+    <tr><th>Card</th><th>Settings</th></tr>
+    <tr><td>Scale</td><td>Negative points, how to treat the neutral point, percentages or values</td></tr>
+    <tr><td>Colors</td><td>The two ends and the neutral colour of the diverging ramp, and conditional formatting (<em>fx</em>) on the scale point colour</td></tr>
+    <tr><td>Question table</td><td>Block column width, shading and its strength, a colour per block, the block score circle, and independent font, size and colour for block and question</td></tr>
+    <tr><td>Labels</td><td>Values on segments, threshold to hide small ones, decimals, question column width, gap to the bars</td></tr>
+    <tr><td>Top / Bottom box <span class="badge">Pro</span></td><td>Box size, NPS, text size and the two NPS colours</td></tr>
+    <tr><td>Benchmark <span class="badge">Pro</span></td><td>Show, positive share and line colour</td></tr>
+    <tr><td>Layout</td><td>Scroll, minimum row height, gap between scale points and between rows</td></tr>
+    <tr><td>Legend</td><td>Show, top or bottom</td></tr>
+  </table>
+
+  <h2>Frequently asked questions</h2>
+
+  <h3>Scale and neutral point</h3>
+
+  <details>
+    <summary>My scale is out of order</summary>
+    <p>Fill in the <em>Scale order</em> well with a numeric rank, or sort the response column
+       in the model. If the well is filled and the order is still wrong, check its
+       aggregation: with one row per respondent, <code>Sum</code> inflates the rank by the
+       number of rows. Set it to <strong>Minimum</strong>.</p>
+  </details>
+
+  <details>
+    <summary>What happens to the middle point of the scale?</summary>
+    <p><em>Scale → Neutral point</em> offers three answers. <strong>Split across the centre</strong>
+       puts half of it either side, which is the usual convention. <strong>Count as positive</strong>
+       moves it entirely to the right. <strong>Leave out of the bar</strong> removes it from the
+       chart and from each question's total, so the remaining percentages are recalculated over
+       the answers that expressed an opinion.</p>
+  </details>
+
+  <details>
+    <summary>My scale has 4 or 7 points, not 5</summary>
+    <p>Any number of points works. Set <em>Negative points</em> to how many fall on the negative
+       side. With an even number of points there is no middle one, so the neutral setting has
+       nothing to split and can be left as it is.</p>
+  </details>
+
+  <h3>Reading the chart</h3>
+
+  <details>
+    <summary>What do the two percentages on the right mean? <span class="badge">Pro</span></summary>
+    <p>Top box and bottom box: the share of the most positive answers and of the most negative
+       ones. <em>Top / Bottom box → Box size</em> chooses how many points go into each, so
+       Top-2 on a 5-point scale is <em>Agree</em> plus <em>Strongly agree</em>.</p>
+  </details>
+
+  <details>
+    <summary>What is the number in the pill? <span class="badge">Pro</span></summary>
+    <p>Top box minus bottom box, on the same idea as a Net Promoter Score. Green at zero or
+       above, red below. Both colours and the text size are configurable.</p>
+  </details>
+
+  <details>
+    <summary>What is the figure in the circle next to each block?</summary>
+    <p>The block's summary, chosen in <em>Question table → Block score</em>: mean score on the
+       scale, share of positive answers, or NPS. It is weighted by responses, not by questions,
+       so a question answered by 95 people does not count the same as one answered by 250.</p>
+  </details>
+
+  <h3>Colours</h3>
+
+  <details>
+    <summary>Can I set the colour of each scale point?</summary>
+    <p>The ramp is built from <em>Colors → Negative end</em>, <em>Neutral</em> and
+       <em>Positive end</em>. For full control, the <em>fx</em> button on <em>Scale point</em>
+       drives the colour from a rule.</p>
+  </details>
+
+  <details>
+    <summary>Can I set the colour of each block?</summary>
+    <p>Yes. <em>Question table</em> shows one colour picker per block, seeded from the report
+       theme, so the colours follow the theme until you override them.</p>
+  </details>
+
+  <h3>Layout</h3>
+
+  <details>
+    <summary>With many questions the rows are tiny, or I cannot see them all</summary>
+    <p><em>Layout → Scroll when rows do not fit</em> keeps the rows at a readable height and
+       lets the chart scroll; the legend stays put. Turn it off and the rows shrink so that
+       everything fits at once, which is what you want when the report is exported to PDF or
+       PowerPoint, where only the visible part is captured.</p>
+  </details>
+
+  <details>
+    <summary>The question text is cut off</summary>
+    <p>The question column sizes itself to the longest question, up to <em>Labels → Question
+       column width</em>. Raise that limit, or reduce the text size.</p>
+  </details>
+
+  <h3>Licensing</h3>
+
+  <details>
+    <summary>Why do Pro features work without a licence while I am editing?</summary>
+    <p>They render under a <em>Pro preview</em> watermark so you can see what the plan gives
+       before buying, which Microsoft's publishing guidelines allow. In reading view, and
+       wherever Power BI cannot check licences — Publish to Web, embedding, export — the free
+       result is drawn with no watermark. A published report never uses a feature you have not
+       paid for.</p>
+  </details>
+
+  <details>
+    <summary>I bought Pro and the visual still behaves as free</summary>
+    <p>The licence is read once per session, after the first render. Refresh the report. If it
+       persists, check in the Microsoft 365 admin centre that the licence is assigned to the
+       account opening the report, and write to
+       <a href="mailto:support@tcviz.com">support@tcviz.com</a> with the tenant name.</p>
+  </details>
+
+  <h2>Accessibility</h2>
+  <p>The chart is a single Tab stop. Arrow keys move between segments, <code>Home</code> and
+     <code>End</code> jump to the ends, <code>Enter</code> or <code>Space</code> selects,
+     <code>Ctrl</code> adds to the selection, <code>Escape</code> clears it and
+     <code>Shift+F10</code> opens the context menu. Every segment carries a label with its
+     question, scale point and share. High contrast mode is honoured through the report theme.</p>
+
+  <h2>Privacy</h2>
+  <p>The visual makes no network requests of any kind and stores nothing outside the report.
+     <code>privileges</code> is empty. See <a href="privacy.html">the privacy page</a>.</p>
+
+  <h2>Contact</h2>
+  <p>Bugs and requests: <a href="https://github.com/tinocallarisa-web/likert-survey-pro/issues">GitHub issues</a>.
+     Questions: <a href="https://github.com/tinocallarisa-web/likert-survey-pro/discussions">Discussions</a>
+     or <a href="mailto:support@tcviz.com">support@tcviz.com</a>.</p>
+
+  <footer>
+    TCViz — Likert Survey Pro. <a href="privacy.html">Privacy</a> ·
+    <a href="terms.html">Terms</a> · <a href="changelog.html">Changelog</a>
+  </footer>
+
+<script>
+// Buscador sin dependencias. Solo OCULTA secciones: si el script no carga, la página
+// sigue completa. Un buscador que construyera el contenido lo dejaría vacío al fallar.
+(function () {
+  var input = document.getElementById("q");
+  var count = document.getElementById("qcount");
+  if (!input) { return; }
+
+  // Cada bloque es un encabezado y todo lo que le sigue hasta el siguiente del mismo nivel.
+  var bloques = [];
+  var nodos = Array.prototype.slice.call(document.body.children);
+  var actual = null;
+  nodos.forEach(function (n) {
+    if (n.tagName === "H2" || n.tagName === "H3") {
+      actual = { head: n, cuerpo: [], texto: n.textContent.toLowerCase() };
+      bloques.push(actual);
+    } else if (actual && n.tagName !== "SCRIPT" && n.tagName !== "FOOTER") {
+      actual.cuerpo.push(n);
+      actual.texto += " " + n.textContent.toLowerCase();
+    }
+  });
+
+  function filtrar() {
+    var q = input.value.trim().toLowerCase();
+    if (!q) {
+      bloques.forEach(function (b) {
+        b.head.style.display = "";
+        b.cuerpo.forEach(function (n) { n.style.display = ""; });
+      });
+      count.textContent = "";
+      return;
+    }
+    var n = 0;
+    bloques.forEach(function (b) {
+      var hit = b.texto.indexOf(q) !== -1;
+      if (hit) { n++; }
+      b.head.style.display = hit ? "" : "none";
+      b.cuerpo.forEach(function (e) { e.style.display = hit ? "" : "none"; });
+    });
+    count.textContent = n === 0 ? "No sections match." : n + " section" + (n === 1 ? "" : "s") + " shown.";
+  }
+
+  input.addEventListener("input", filtrar);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") { input.value = ""; filtrar(); }
+  });
+})();
+</script>
+</body>
+</html>

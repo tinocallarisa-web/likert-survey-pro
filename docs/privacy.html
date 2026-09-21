@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy policy — Likert Survey Pro | TCViz</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 24px; color: #333; line-height: 1.7; }
+    h1 { color: #0078D4; margin-bottom: 4px; }
+    h2 { margin-top: 2em; color: #1a1a2e; border-bottom: 2px solid #e0e0e0; padding-bottom: 6px; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: .9em; }
+    .card { background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 16px 20px; margin: 16px 0; }
+    nav a { color: #0078D4; text-decoration: none; margin-right: 20px; }
+    footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: .9rem; color: #888; }
+  </style>
+</head>
+<body>
+  <h1>Privacy policy — Likert Survey Pro</h1>
+  <p><strong>TCViz</strong> · <a href="mailto:support@tcviz.com">support@tcviz.com</a> · Last updated 21 September 2026</p>
+  <nav><a href="support.html">Support</a><a href="terms.html">Terms</a><a href="changelog.html">Changelog</a></nav>
+
+  <div class="card">
+    <strong>The short version: no data leaves your report.</strong> The visual makes no network
+    requests, sends no telemetry, sets no cookies and stores nothing outside the report file.
+  </div>
+
+  <h2>What the visual does with your data</h2>
+  <p>It receives the fields you place in its wells, aggregates them inside the Power BI sandbox
+     and draws the result. The data is held in memory for as long as the visual is on screen and
+     is discarded when it is removed or the report is closed.</p>
+
+  <h2>What it does not do</h2>
+  <ul>
+    <li><strong>No network access.</strong> The visual declares <code>"privileges": []</code>,
+        which is what allows it to be certified by Microsoft. It contains no <code>fetch</code>,
+        <code>XMLHttpRequest</code> or WebSocket calls, and loads no external fonts, scripts or
+        images.</li>
+    <li><strong>No telemetry or analytics.</strong> Nothing is measured, counted or reported.</li>
+    <li><strong>No cookies and no local storage.</strong></li>
+    <li><strong>No external service.</strong> There is no companion application and no server to
+        contact. Everything runs in the sandbox Power BI gives the visual.</li>
+  </ul>
+
+  <h2>What is saved in the report</h2>
+  <p>Only your formatting choices — colours, sizes, the settings of each card — which Power BI
+     stores inside the <code>.pbix</code> file like those of any other visual. No survey data and
+     no personal data are written by the visual.</p>
+
+  <h2>Licensing</h2>
+  <p>Plans are handled entirely by Microsoft AppSource. The visual asks Power BI whether the
+     current user holds a licence, through the Power BI licensing API, and receives yes or no.
+     TCViz does not see your identity, your tenant or your data through that call, and no licence
+     key is stored anywhere.</p>
+
+  <h2>Support requests</h2>
+  <p>If you write to <a href="mailto:support@tcviz.com">support@tcviz.com</a> or open a GitHub
+     issue, we keep only what you send us, for as long as it takes to answer. Please do not
+     attach real survey responses: a sample with made-up data is enough to reproduce a problem.</p>
+
+  <h2>Contact</h2>
+  <p>TCViz · <a href="mailto:support@tcviz.com">support@tcviz.com</a></p>
+
+  <footer>TCViz — Likert Survey Pro. <a href="support.html">Support</a> · <a href="terms.html">Terms</a></footer>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Changelog — Likert Survey Pro | TCViz</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 24px; color: #333; line-height: 1.7; }
+    h1 { color: #0078D4; margin-bottom: 4px; }
+    h2 { margin-top: 2em; color: #1a1a2e; border-bottom: 2px solid #e0e0e0; padding-bottom: 6px; }
+    h3 { margin-top: 1.3em; color: #333; font-size: 1.05rem; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-size: .9em; }
+    nav a { color: #0078D4; text-decoration: none; margin-right: 20px; }
+    footer { margin-top: 60px; padding-top: 20px; border-top: 1px solid #e0e0e0; font-size: .9rem; color: #888; }
+  </style>
+</head>
+<body>
+  <h1>Changelog — Likert Survey Pro</h1>
+  <p><strong>Current version:</strong> 1.0.0.0 · <a href="mailto:support@tcviz.com">support@tcviz.com</a></p>
+  <nav><a href="support.html">Support</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
+<p>All notable changes to this visual are documented here.</p>
+<p>Versioning follows <code>MAJOR.MINOR.PATCH.BUILD</code> in <code>pbiviz.json</code> and semver in <code>package.json</code>.</p>
+<h2>[1.0.0.0] — unreleased</h2>
+<p>First version.</p>
+<h3>Added</h3>
+<ul>
+<li>Diverging stacked bars centred on the neutral response, one bar per question.</li>
+<li><strong>Neutral handling</strong>: split across the centre, counted as positive, or left out of the bar. Leaving it out changes each question's total, so the percentages are recalculated.</li>
+<li>Percentages or raw values, with a threshold to hide labels on small segments.</li>
+<li><strong>Conditional formatting (fx) on the scale point colour</strong>: one rule for the whole scale, overridden per response by a colour set by hand.</li>
+<li>Diverging colour ramp between the two ends, through the neutral colour.</li>
+<li>Cross-filtering with dimming, report tooltips, context menu, multi-visual selection.</li>
+<li>Keyboard: roving tabindex so the chart is a single Tab stop; arrows, Home/End, Enter, Escape, Shift+F10.</li>
+<li>High contrast through <code>host.colorPalette</code>.</li>
+<li>Landing page, and <code>host.allowInteractions</code> honoured.</li>
+<li>English and Spanish, with every data role, card and property carrying its <code>displayNameKey</code>.</li>
+<li><strong>Pro</strong>: Top/Bottom box, NPS (top minus bottom), benchmark line and question groups. Without a licence, in edit mode, they render under a "Pro preview" watermark.</li>
+<li>A colour picker per block, seeded from the report theme. A rule cannot do this: a rule evaluates one condition for every element, so it cannot express "this block in this colour". Without a licence, in edit mode, they render under a "Pro preview" watermark.</li>
+</ul>
+<h3>Certification</h3>
+<ul>
+<li><code>privileges: []</code>. No <code>fetch</code>, <code>XMLHttpRequest</code>, <code>WebSocket</code>, <code>eval</code> or <code>innerHTML</code>.</li>
+<li>Format pane built with <code>getFormattingModel</code>, not the deprecated <code>enumerateObjectInstances</code>.</li>
+<li><code>npm audit</code>: 0 vulnerabilities. ESLint with <code>eslint-plugin-powerbi-visuals</code>: no errors.</li>
+</ul>
+  <footer>TCViz — Likert Survey Pro.</footer>
+</body>
+</html>
