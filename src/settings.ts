@@ -207,18 +207,17 @@ class LegendCard extends Card {
 }
 
 /**
- * El control que genera el boton fx del color de bloque. Se crea aparte porque SOLO se
- * anade al panel con licencia: emitirlo siempre daria un fx que no hace nada en Free.
- * Selector comodin, que es lo que hace que Power BI materialice la regla en cada bloque.
+ * Un selector de color para un bloque concreto, atado a su propia identidad. Es lo que
+ * permite "este bloque de este color": una regla no sirve para eso, porque evalua la misma
+ * condicion para todos los elementos.
  */
-export function makeBlockRuleSlice(): formattingSettings.ColorPicker {
+export function makeBlockColorSlice(nombre: string, color: string, selector: any)
+        : formattingSettings.ColorPicker {
     return new formattingSettings.ColorPicker({
-        name: "blockFillColor", displayNameKey: "Prop_QtableBlockFillColor",
-        value: { value: "#5E81AC" },
-        selector: dataViewWildcard.createDataViewWildcardSelector(
-            dataViewWildcard.DataViewWildcardMatchingOption.InstancesAndTotals),
-        altConstantSelector: null,
-        instanceKind: CONSTANT_OR_RULE
+        name: "blockFillColor",
+        displayName: nombre,
+        value: { value: color },
+        selector
     });
 }
 

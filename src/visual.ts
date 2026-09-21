@@ -25,7 +25,7 @@ import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
 import {
     LikertSettings, LikertFormattingModel, toSettings, defaultSettings, freeSettings,
-    makeBlockRuleSlice, SP_IDENTIFIER, matchesPlan, FREE_MAX_RESPONSES
+    makeBlockColorSlice, SP_IDENTIFIER, matchesPlan, FREE_MAX_RESPONSES
 } from "./settings";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -37,7 +37,6 @@ const PRO_BOXES = "Top/Bottom box";
 const PRO_NPS = "NPS";
 const PRO_BENCHMARK = "the benchmark line";
 const PRO_GROUPS = "question groups";
-const PRO_BLOCK_CF = "conditional formatting on blocks";
 
 interface Segment {
     responseIndex: number;
@@ -101,6 +100,8 @@ export class Visual implements IVisual {
     private rows: QuestionRow[] = [];
     private responseLabels: string[] = [];
     private responseColors: string[] = [];
+    /** Bloques presentes, para emitir un selector de color por cada uno. */
+    private blocks: Array<{ name: string; sid: ISelectionId | null; color: string }> = [];
     private focusIndex = -1;
 
     constructor(options: VisualConstructorOptions) {
@@ -351,7 +352,6 @@ export class Visual implements IVisual {
         if (raw.boxes.showNps) { w.push(PRO_NPS); }
         if (raw.benchmark.show) { w.push(PRO_BENCHMARK); }
         if (dv.categorical?.categories?.some(c => c.source.roles?.["group"])) { w.push(PRO_GROUPS); }
-        if (this.rows.some(r => r.groupColor !== null)) { w.push(PRO_BLOCK_CF); }
         this.attemptedPro = this.isPro ? [] : w;
     }
 
@@ -441,10 +441,8 @@ export class Visual implements IVisual {
                 // El color del bloque llega en los objects de su propia columna. Se mira
                 // tambien la de preguntas porque, segun como resuelva la regla, el color
                 // puede aterrizar ahi: leer los dos sitios sale gratis y evita un viaje.
-                groupColor: (gCol && (this.isPro || this.proPreview))
-                    ? (((gCol as any).objects?.[i]?.qtable?.blockFillColor?.solid?.color)
-                        || ((qCol as any).objects?.[i]?.qtable?.blockFillColor?.solid?.color)
-                        || null)
+                groupColor: gCol
+                    ? (((gCol as any).objects?.[i]?.qtable?.blockFillColor?.solid?.color) || null)
                     : null,
                 total, segments: segs, negShare: neg, posShare: pos,
                 topBox: top, bottomBox: bottom,
@@ -452,6 +450,24 @@ export class Visual implements IVisual {
             });
         }
         this.sortRowsByGroup();
+        this.collectBlocks();
+    }
+
+    /** Un bloque por nombre, en su orden de aparicion, con el color que toca mostrar. */
+    private collectBlocks(): void {
+        const pal: any = (this.host as any).colorPalette;
+        const vistos = new Map<string, number>();
+        this.blocks = [];
+        this.rows.forEach(r => {
+            const n = r.group;
+            if (n === null || vistos.has(n)) { return; }
+            vistos.set(n, this.blocks.length);
+            this.blocks.push({
+                name: n,
+                sid: r.groupSelectionId,
+                color: r.groupColor ?? pal?.getColor?.(n)?.value ?? "#5E81AC"
+            });
+        });
     }
 
     /**
@@ -836,10 +852,16 @@ export class Visual implements IVisual {
         // El fx del color de bloque solo se ofrece con licencia o en vista previa. Un boton
         // que no hace nada es peor que no tenerlo: el usuario crea la regla y no pasa nada.
         const card: any = this.formattingModel.qtable;
+        // Se rehacen los controles de color en cada pasada: los bloques dependen del dato.
         card.slices = card.slices.filter((sl: any) => sl.name !== "blockFillColor");
-        if (this.isPro || this.proPreview) {
-            card.slices.splice(3, 0, makeBlockRuleSlice());
-        }
+        const extra: any[] = [];
+        // Un selector por bloque, con su propia identidad. Gratis: es cosmetico, y los
+        // colores del tema ya lo eran.
+        this.blocks.forEach(b => {
+            if (!b.sid) { return; }
+            extra.push(makeBlockColorSlice(b.name, b.color, b.sid.getSelector()));
+        });
+        card.slices.splice(3, 0, ...extra);
         return this.formattingService.buildFormattingModel(this.formattingModel);
     }
 }
