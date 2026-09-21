@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation and support
+    url: https://tinocallarisa-web.github.io/likert-survey-pro/support.html
+    about: Quick start, field wells, format pane reference and FAQ.
+  - name: Changelog
+    url: https://tinocallarisa-web.github.io/likert-survey-pro/changelog.html
+    about: What changed in each version.
+  - name: Licensing questions
+    url: mailto:support@tcviz.com
+    about: Plans, trials and invoices.

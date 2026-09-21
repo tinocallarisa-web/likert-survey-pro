@@ -1,0 +1,230 @@
+{
+  "dataRoles": [
+    {
+      "displayName": "Question",
+      "displayNameKey": "Role_Question",
+      "name": "question",
+      "kind": "Grouping",
+      "description": "One diverging bar per value: the survey question or item."
+    },
+    {
+      "displayName": "Response",
+      "displayNameKey": "Role_Response",
+      "name": "response",
+      "kind": "Grouping",
+      "description": "The scale point (Strongly disagree … Strongly agree). Sort this column in the model to control the order of the scale."
+    },
+    {
+      "displayName": "Value",
+      "displayNameKey": "Role_Value",
+      "name": "value",
+      "kind": "Measure",
+      "description": "Count of responses, or any measure to distribute across the scale."
+    },
+    {
+      "displayName": "Group [Pro]",
+      "displayNameKey": "Role_Group",
+      "name": "group",
+      "kind": "Grouping",
+      "description": "Optional block that questions belong to, rendered as a labelled section."
+    },
+    {
+      "displayName": "Tooltips",
+      "displayNameKey": "Role_Tooltips",
+      "name": "tooltips",
+      "kind": "Measure"
+    }
+  ],
+  "dataViewMappings": [
+    {
+      "conditions": [
+        { "question": { "max": 1 }, "response": { "max": 1 }, "value": { "max": 1 }, "group": { "max": 1 } }
+      ],
+      "categorical": {
+        "categories": {
+          "select": [{ "for": { "in": "group" } }, { "for": { "in": "question" } }],
+          "dataReductionAlgorithm": { "top": { "count": 1000 } }
+        },
+        "values": {
+          "group": {
+            "by": "response",
+            "select": [{ "bind": { "to": "value" } }, { "bind": { "to": "tooltips" } }],
+            "dataReductionAlgorithm": { "top": { "count": 30 } }
+          }
+        }
+      }
+    }
+  ],
+  "objects": {
+    "scale": {
+      "displayName": "Scale",
+      "displayNameKey": "Obj_Scale",
+      "properties": {
+        "negativeCount": {
+          "displayName": "Negative points",
+          "displayNameKey": "Prop_ScaleNegativeCount",
+          "description": "How many scale points from the left count as negative. The rest are positive, minus the neutral one if it is set apart.",
+          "type": { "numeric": true }
+        },
+        "neutralMode": {
+          "displayName": "Neutral point",
+          "displayNameKey": "Prop_ScaleNeutralMode",
+          "type": {
+            "enumeration": [
+              { "value": "split", "displayName": "Split across the centre" },
+              { "value": "right", "displayName": "Count as positive" },
+              { "value": "exclude", "displayName": "Leave out of the bar" }
+            ]
+          }
+        },
+        "asPercent": {
+          "displayName": "Show as percentage",
+          "displayNameKey": "Prop_ScaleAsPercent",
+          "type": { "bool": true }
+        }
+      }
+    },
+    "colors": {
+      "displayName": "Colors",
+      "displayNameKey": "Obj_Colors",
+      "properties": {
+        "negativeColor": {
+          "displayName": "Negative end",
+          "displayNameKey": "Prop_ColorsNegativeColor",
+          "type": { "fill": { "solid": { "color": true } } }
+        },
+        "positiveColor": {
+          "displayName": "Positive end",
+          "displayNameKey": "Prop_ColorsPositiveColor",
+          "type": { "fill": { "solid": { "color": true } } }
+        },
+        "neutralColor": {
+          "displayName": "Neutral",
+          "displayNameKey": "Prop_ColorsNeutralColor",
+          "type": { "fill": { "solid": { "color": true } } }
+        },
+        "fill": {
+          "displayName": "Scale point",
+          "displayNameKey": "Prop_ColorsFill",
+          "type": { "fill": { "solid": { "color": true } } }
+        }
+      }
+    },
+    "labels": {
+      "displayName": "Labels",
+      "displayNameKey": "Obj_Labels",
+      "properties": {
+        "showValues": {
+          "displayName": "Show values on segments",
+          "displayNameKey": "Prop_LabelsShowValues",
+          "type": { "bool": true }
+        },
+        "minSegment": {
+          "displayName": "Hide labels under (%)",
+          "displayNameKey": "Prop_LabelsMinSegment",
+          "type": { "numeric": true }
+        },
+        "decimals": {
+          "displayName": "Decimal places",
+          "displayNameKey": "Prop_LabelsDecimals",
+          "type": { "numeric": true }
+        },
+        "questionWidth": {
+          "displayName": "Question column width (%)",
+          "displayNameKey": "Prop_LabelsQuestionWidth",
+          "type": { "numeric": true }
+        },
+        "fontSize": {
+          "displayName": "Text size",
+          "displayNameKey": "Prop_LabelsFontSize",
+          "type": { "formatting": { "fontSize": true } }
+        },
+        "textColor": {
+          "displayName": "Text color",
+          "displayNameKey": "Prop_LabelsTextColor",
+          "type": { "fill": { "solid": { "color": true } } }
+        }
+      }
+    },
+    "boxes": {
+      "displayName": "Top / Bottom box [Pro]",
+      "displayNameKey": "Obj_Boxes",
+      "properties": {
+        "show": {
+          "displayName": "Show Top/Bottom box",
+          "displayNameKey": "Prop_BoxesShow",
+          "type": { "bool": true }
+        },
+        "size": {
+          "displayName": "Box size",
+          "displayNameKey": "Prop_BoxesSize",
+          "type": {
+            "enumeration": [
+              { "value": "1", "displayName": "Top-1 / Bottom-1" },
+              { "value": "2", "displayName": "Top-2 / Bottom-2" },
+              { "value": "3", "displayName": "Top-3 / Bottom-3" }
+            ]
+          }
+        },
+        "showNps": {
+          "displayName": "Show NPS (Top − Bottom)",
+          "displayNameKey": "Prop_BoxesShowNps",
+          "type": { "bool": true }
+        }
+      }
+    },
+    "benchmark": {
+      "displayName": "Benchmark [Pro]",
+      "displayNameKey": "Obj_Benchmark",
+      "properties": {
+        "show": {
+          "displayName": "Show benchmark line",
+          "displayNameKey": "Prop_BenchmarkShow",
+          "type": { "bool": true }
+        },
+        "value": {
+          "displayName": "Positive share (%)",
+          "displayNameKey": "Prop_BenchmarkValue",
+          "type": { "numeric": true }
+        },
+        "color": {
+          "displayName": "Line color",
+          "displayNameKey": "Prop_BenchmarkColor",
+          "type": { "fill": { "solid": { "color": true } } }
+        }
+      }
+    },
+    "legend": {
+      "displayName": "Legend",
+      "displayNameKey": "Obj_Legend",
+      "properties": {
+        "show": {
+          "displayName": "Show legend",
+          "displayNameKey": "Prop_LegendShow",
+          "type": { "bool": true }
+        },
+        "position": {
+          "displayName": "Position",
+          "displayNameKey": "Prop_LegendPosition",
+          "type": {
+            "enumeration": [
+              { "value": "top", "displayName": "Top" },
+              { "value": "bottom", "displayName": "Bottom" }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "tooltips": {
+    "supportedTypes": { "default": true, "canvas": true },
+    "roles": ["tooltips"]
+  },
+  "sorting": { "default": {} },
+  "supportsHighlight": true,
+  "supportsSynchronizingFilterState": true,
+  "supportsLandingPage": true,
+  "supportsKeyboardFocus": true,
+  "supportsMultiVisualSelection": true,
+  "privileges": []
+}

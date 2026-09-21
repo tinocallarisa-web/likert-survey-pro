@@ -1,0 +1,711 @@
+/*
+ *  Likert Survey Pro — TCViz
+ *
+ *  Barras apiladas divergentes para datos de encuesta, centradas en la respuesta neutra.
+ *  Sin acceso a red, sin almacenamiento y sin innerHTML: privileges es [] y nada sale
+ *  del informe. Ver docs/CERTIFICATION-NOTES.md.
+ */
+"use strict";
+
+import powerbi from "powerbi-visuals-api";
+import { dataViewWildcard } from "powerbi-visuals-utils-dataviewutils";
+import { valueFormatter } from "powerbi-visuals-utils-formattingutils";
+import IValueFormatter = valueFormatter.IValueFormatter;
+
+import DataView = powerbi.DataView;
+import IVisual = powerbi.extensibility.visual.IVisual;
+import IVisualHost = powerbi.extensibility.visual.IVisualHost;
+import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
+import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
+import ISelectionManager = powerbi.extensibility.ISelectionManager;
+import ISelectionId = powerbi.visuals.ISelectionId;
+import IVisualEventService = powerbi.extensibility.IVisualEventService;
+import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
+
+import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
+import {
+    LikertSettings, LikertFormattingModel, toSettings, defaultSettings, freeSettings,
+    SP_IDENTIFIER, matchesPlan, FREE_MAX_RESPONSES
+} from "./settings";
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+/** ServicePlanState: Active = 1, Warning = 2 (periodo de gracia: ya pagó). */
+const STATE_ACTIVE = 1;
+const STATE_WARNING = 2;
+/** Etiquetas de las funciones Pro, como las nombra el aviso de compra. */
+const PRO_BOXES = "Top/Bottom box";
+const PRO_NPS = "NPS";
+const PRO_BENCHMARK = "the benchmark line";
+const PRO_GROUPS = "question groups";
+
+interface Segment {
+    responseIndex: number;
+    label: string;
+    value: number;
+    share: number;        // 0..1 sobre el total de la pregunta
+    color: string;
+    selectionId: ISelectionId;
+    tooltip: VisualTooltipDataItem[];
+    highlighted: boolean;
+}
+
+interface QuestionRow {
+    question: string;
+    group: string | null;
+    total: number;
+    segments: Segment[];
+    negShare: number;     // parte que queda a la izquierda del centro
+    posShare: number;
+    topBox: number;
+    bottomBox: number;
+    selectionId: ISelectionId;
+}
+
+export class Visual implements IVisual {
+    private host: IVisualHost;
+    private root: HTMLElement;
+    private svg: SVGSVGElement;
+    private watermarkEl: HTMLDivElement;
+    private events: IVisualEventService;
+    private selectionManager: ISelectionManager;
+    private licenseManager: any;
+
+    private isPro: boolean = false; // ISPRO_MARKER — build-test.js lo parchea; nunca a mano
+    private licenseRequested = false;
+    private licenseResolved = false;
+    private licenseEnvSupported = true;
+    private licenseInfoAvailable = true;
+    private notifiedPro: string[] = [];
+    private licenseIconTimer: number | null = null;
+    private noticeShown = false;
+    private attemptedPro: string[] = [];
+    /** Vista previa Pro: Free, editando, con la licencia resuelta y legible. */
+    private proPreview = false;
+    private editing = false;
+
+    private settings: LikertSettings = JSON.parse(JSON.stringify(defaultSettings));
+    private rawSettings: LikertSettings = JSON.parse(JSON.stringify(defaultSettings));
+    private formattingService: FormattingSettingsService;
+    private formattingModel: LikertFormattingModel = new LikertFormattingModel();
+    private localization: powerbi.extensibility.ILocalizationManager;
+    private lastOptions: VisualUpdateOptions | null = null;
+    private rows: QuestionRow[] = [];
+    private responseLabels: string[] = [];
+    private responseColors: string[] = [];
+    private focusIndex = -1;
+
+    constructor(options: VisualConstructorOptions) {
+        this.host = options.host;
+        this.events = options.host.eventService;
+        this.selectionManager = options.host.createSelectionManager();
+        this.licenseManager = (options.host as any).licenseManager;
+        this.localization = options.host.createLocalizationManager();
+        this.formattingService = new FormattingSettingsService(this.localization);
+
+        this.root = document.createElement("div");
+        this.root.className = "likert-survey-pro";
+        this.root.style.cssText = "width:100%;height:100%;position:relative;overflow:hidden;" +
+            "font-family:'Segoe UI',system-ui,sans-serif;box-sizing:border-box;";
+        this.root.setAttribute("aria-label", "Likert survey chart");
+        options.element.appendChild(this.root);
+
+        this.svg = document.createElementNS(SVG_NS, "svg") as SVGSVGElement;
+        this.svg.style.display = "block";
+        this.root.appendChild(this.svg);
+
+        // Marca de agua de la vista previa Pro. Blanca con contorno oscuro: un gris
+        // translúcido desaparece sobre barras saturadas. No intercepta clics ni entra en
+        // el recorrido del lector de pantalla.
+        this.watermarkEl = document.createElement("div");
+        this.watermarkEl.setAttribute("aria-hidden", "true");
+        this.watermarkEl.textContent = "Pro preview";
+        this.watermarkEl.style.cssText =
+            "position:absolute;left:0;top:0;right:0;bottom:0;display:none;align-items:center;" +
+            "justify-content:center;pointer-events:none;z-index:5;font:700 32px 'Segoe UI',sans-serif;" +
+            "color:#FFFFFF;opacity:0.55;transform:rotate(-20deg);" +
+            "text-shadow:0 0 2px rgba(46,52,64,0.85),0 1px 3px rgba(46,52,64,0.65);";
+        this.root.appendChild(this.watermarkEl);
+
+        this.injectStyles();
+
+        this.svg.addEventListener("contextmenu", (e: MouseEvent) => {
+            const seg = (e.target as HTMLElement)?.closest?.("[data-seg]") as SVGElement | null;
+            const sid = seg ? (seg as any).__sid : null;
+            this.selectionManager.showContextMenu(sid ?? {}, { x: e.clientX, y: e.clientY });
+            e.preventDefault();
+        });
+        this.svg.addEventListener("click", (e: MouseEvent) => {
+            if ((this.host as any).allowInteractions === false) { return; }
+            const seg = (e.target as HTMLElement)?.closest?.("[data-seg]") as SVGElement | null;
+            if (!seg) { this.selectionManager.clear(); return; }
+            const sid = (seg as any).__sid as ISelectionId;
+            this.selectionManager.select(sid, e.ctrlKey || e.metaKey);
+            e.stopPropagation();
+        });
+        this.root.addEventListener("keydown", (e: KeyboardEvent) => this.onKeyDown(e));
+    }
+
+    /** El .less puede no empaquetarse según la versión de tools: el CSS va desde aquí. */
+    private injectStyles(): void {
+        const id = "likert-survey-pro-styles";
+        const doc = this.root.ownerDocument ?? document;
+        if (doc.getElementById(id)) { return; }
+        const st = doc.createElement("style");
+        st.id = id;
+        st.textContent =
+            ".likert-survey-pro [data-seg]{cursor:pointer}" +
+            ".likert-survey-pro [data-seg]:focus{outline:none}" +
+            ".likert-survey-pro [data-seg]:focus-visible{outline:none}";
+        (doc.head ?? this.root).appendChild(st);
+    }
+
+    // ── Licencia ──────────────────────────────────────────────────────────────
+
+    /** La licencia nunca en el camino crítico del render. */
+    private requestLicenseDeferred(): void {
+        if (this.licenseRequested || this.isPro) { return; }
+        this.licenseRequested = true;
+        window.setTimeout(() => {
+            try {
+                const lm = this.licenseManager;
+                if (!lm) { this.licenseResolved = true; this.afterLicense(); return; }
+                lm.getAvailableServicePlans().then(
+                    (r: any) => {
+                        this.licenseEnvSupported = !r?.isLicenseUnsupportedEnv;
+                        this.licenseInfoAvailable = r?.isLicenseInfoAvailable !== false;
+                        this.isPro = !!(r?.plans?.some((p: any) =>
+                            matchesPlan(p.spIdentifier, SP_IDENTIFIER) &&
+                            ((p.state as unknown as number) === STATE_ACTIVE ||
+                             (p.state as unknown as number) === STATE_WARNING)));
+                        this.licenseResolved = true;
+                        this.afterLicense();
+                    },
+                    () => {
+                        // Licencia ilegible: Free, pero SIN avisos. No sabemos si ya pagó.
+                        this.licenseInfoAvailable = false;
+                        this.licenseResolved = true;
+                        this.afterLicense();
+                    }
+                );
+            } catch (_) {
+                this.licenseInfoAvailable = false;
+                this.licenseResolved = true;
+                this.afterLicense();
+            }
+        }, 0);
+    }
+
+    /**
+     * La licencia responde DESPUÉS del primer render, cuando proPreview todavía era false
+     * y los ajustes se resolvieron como Free. Sin repintar aquí, el autor se queda con el
+     * resultado gratuito hasta que toca cualquier ajuste.
+     */
+    private afterLicense(): void {
+        if (this.lastOptions) { this.update(this.lastOptions); }
+    }
+
+    private computePreview(): boolean {
+        return !this.isPro && this.editing && this.licenseResolved
+            && this.licenseEnvSupported && this.licenseInfoAvailable;
+    }
+
+    private cancelLicenseIcon(): void {
+        if (this.licenseIconTimer !== null) {
+            window.clearTimeout(this.licenseIconTimer);
+            this.licenseIconTimer = null;
+        }
+    }
+
+    /**
+     * Power BI muestra UNA notificación a la vez y la última sustituye a la anterior, así
+     * que llamar a notifyFeatureBlocked y notifyLicenseRequired seguidos deja solo una
+     * visible. Secuencia: retirar lo anterior, banner con la función concreta, y al
+     * terminar (~10 s) la barra de Upgrade persistente.
+     */
+    private syncLicenseNotification(): void {
+        const lm = this.licenseManager;
+        if (!lm) { return; }
+        try {
+            if (this.isPro || this.attemptedPro.length === 0) {
+                this.cancelLicenseIcon();
+                if (this.noticeShown) {
+                    this.noticeShown = false;
+                    this.notifiedPro = [];
+                    lm.clearLicenseNotification?.();
+                }
+                return;
+            }
+            if (!this.licenseResolved || !this.licenseEnvSupported || !this.licenseInfoAvailable) { return; }
+
+            const added = this.attemptedPro.filter(a => this.notifiedPro.indexOf(a) === -1);
+            this.notifiedPro = this.attemptedPro.slice();
+            if (added.length === 0) { return; }
+            this.noticeShown = true;
+
+            const one = added.length === 1;
+            const list = one ? added[0]
+                : added.slice(0, -1).join(", ") + " and " + added[added.length - 1];
+            const tpl = this.localization?.getDisplayName(one ? "LicenceNotice_One" : "LicenceNotice_Many")
+                || `Likert Survey Pro: {0} ${one ? "is" : "are"} part of the Pro plan, shown as a watermarked preview.`;
+            const msg = tpl.replace("{0}", list);
+
+            const show = () => {
+                try { lm.notifyFeatureBlocked?.(msg.slice(0, 500)); } catch (_) { /* best effort */ }
+                this.cancelLicenseIcon();
+                this.licenseIconTimer = window.setTimeout(() => {
+                    this.licenseIconTimer = null;
+                    if (this.isPro || this.notifiedPro.length === 0) { return; }
+                    // LicenseNotificationType.General es const enum: 0 en runtime.
+                    try { lm.notifyLicenseRequired?.(0); } catch (_) { /* best effort */ }
+                }, 10500);
+            };
+            const cleared = lm.clearLicenseNotification?.();
+            if (cleared && typeof cleared.then === "function") { cleared.then(show, show); }
+            else { show(); }
+        } catch (_) { /* nunca romper el render por un aviso */ }
+    }
+
+    private updateWatermark(): void {
+        // El render reconstruye el SVG, no el contenedor, pero se reinserta por seguridad:
+        // encender la marca sobre un nodo desconectado no pinta nada.
+        if (this.watermarkEl.parentNode !== this.root) { this.root.appendChild(this.watermarkEl); }
+        const show = this.proPreview && this.attemptedPro.length > 0;
+        this.watermarkEl.style.display = show ? "flex" : "none";
+        if (!show) { return; }
+        const size = Math.max(20, Math.min(72, Math.round((this.root.clientWidth || 0) * 0.09)));
+        this.watermarkEl.style.fontSize = `${size}px`;
+    }
+
+    // ── Update ────────────────────────────────────────────────────────────────
+
+    public update(options: VisualUpdateOptions): void {
+        this.events.renderingStarted(options);
+        try {
+            this.lastOptions = options;
+            const dv = options.dataViews?.[0];
+            const w = Math.max(options.viewport.width, 1);
+            const h = Math.max(options.viewport.height, 1);
+
+            const viewMode = (options as any).viewMode;
+            this.editing = typeof viewMode === "number" && viewMode !== 0;
+            this.proPreview = this.computePreview();
+
+            if (!dv?.categorical?.categories?.length || !dv.categorical.values?.length) {
+                this.attemptedPro = [];
+                this.proPreview = false;
+                this.updateWatermark();
+                this.renderLanding(w, h);
+                this.requestLicenseDeferred();
+                this.events.renderingFinished(options);
+                return;
+            }
+
+            this.formattingModel = this.formattingService.populateFormattingSettingsModel(LikertFormattingModel, dv);
+            this.rawSettings = toSettings(this.formattingModel);
+            const proNow = this.isPro || this.proPreview;
+            this.settings = proNow ? this.rawSettings : freeSettings(this.rawSettings);
+
+            this.buildRows(dv);
+            this.computeAttemptedPro(dv);
+            this.render(w, h);
+
+            this.requestLicenseDeferred();
+            this.syncLicenseNotification();
+            this.updateWatermark();
+
+            this.events.renderingFinished(options);
+        } catch (e) {
+            this.events.renderingFailed(options, String(e));
+        }
+    }
+
+    /** Lo que el usuario ha pedido y el tier gratuito no da. Se calcula ANTES de apagarlo. */
+    private computeAttemptedPro(dv: DataView): void {
+        const raw = this.rawSettings;
+        const w: string[] = [];
+        if (raw.boxes.show) { w.push(PRO_BOXES); }
+        if (raw.boxes.showNps) { w.push(PRO_NPS); }
+        if (raw.benchmark.show) { w.push(PRO_BENCHMARK); }
+        if (dv.categorical?.categories?.some(c => c.source.roles?.["group"])) { w.push(PRO_GROUPS); }
+        this.attemptedPro = this.isPro ? [] : w;
+    }
+
+    // ── Datos ─────────────────────────────────────────────────────────────────
+
+    private buildRows(dv: DataView): void {
+        const cat = dv.categorical;
+        const qCol = cat.categories.find(c => c.source.roles?.["question"]) ?? cat.categories[0];
+        const gCol = cat.categories.find(c => c.source.roles?.["group"]);
+        const groups = cat.values.grouped ? cat.values.grouped() : [];
+        const proNow = this.isPro || this.proPreview;
+
+        const fmt: IValueFormatter = valueFormatter.create({
+            format: cat.values[0]?.source?.format || "",
+            cultureSelector: this.host.locale
+        });
+
+        // Orden de la escala: el de los grupos, que sigue la ordenación del modelo.
+        const kept = groups.slice(0, FREE_MAX_RESPONSES);
+        this.responseLabels = kept.map(g => String(g.name ?? ""));
+        this.responseColors = this.scaleColors(kept.length, dv);
+
+        const n = qCol.values.length;
+        const s = this.settings;
+        const negN = Math.max(0, Math.min(s.scale.negativeCount, kept.length));
+        const neutralIdx = s.scale.neutralMode === "split" ? negN : -1;
+
+        const hasHl = kept.some(g => (g.values?.[0] as any)?.highlights != null);
+        this.rows = [];
+
+        for (let i = 0; i < n; i++) {
+            const segs: Segment[] = [];
+            let total = 0;
+            kept.forEach((g, gi) => {
+                if (gi === neutralIdx && s.scale.neutralMode === "exclude") { return; }
+                const col: any = (g.values as any[]).find(v => v?.source?.roles?.value) ?? g.values[0];
+                const v = Number(col?.values?.[i] ?? 0) || 0;
+                total += v;
+            });
+            if (total <= 0) { continue; }
+
+            kept.forEach((g, gi) => {
+                if (s.scale.neutralMode === "exclude" && gi === neutralIdx) { return; }
+                const col: any = (g.values as any[]).find(v => v?.source?.roles?.value) ?? g.values[0];
+                const v = Number(col?.values?.[i] ?? 0) || 0;
+                const hl = (col?.highlights?.[i] ?? null) != null;
+                const sid = this.host.createSelectionIdBuilder()
+                    .withCategory(qCol, i)
+                    .withSeries(dv.categorical.values, g)
+                    .createSelectionId();
+                const tip: VisualTooltipDataItem[] = [
+                    { displayName: String(qCol.values[i] ?? ""), value: String(g.name ?? ""),
+                      color: this.responseColors[gi] },
+                    { displayName: "Value", value: fmt.format(v) },
+                    { displayName: "Share", value: `${(total ? v / total * 100 : 0).toFixed(1)}%` }
+                ];
+                (g.values as any[]).filter(v2 => v2?.source?.roles?.tooltips).forEach(v2 => {
+                    tip.push({ displayName: v2.source.displayName || "", value: String(v2.values?.[i] ?? "") });
+                });
+                segs.push({
+                    responseIndex: gi, label: String(g.name ?? ""), value: v,
+                    share: total ? v / total : 0, color: this.responseColors[gi],
+                    selectionId: sid, tooltip: tip,
+                    highlighted: !hasHl || hl
+                });
+            });
+
+            let neg = 0, pos = 0;
+            segs.forEach(sg => {
+                if (sg.responseIndex < negN) { neg += sg.share; }
+                else if (sg.responseIndex === neutralIdx) { neg += sg.share / 2; pos += sg.share / 2; }
+                else { pos += sg.share; }
+            });
+
+            const boxN = Math.max(1, Math.min(s.boxes.size, kept.length));
+            const top = segs.filter(sg => sg.responseIndex >= kept.length - boxN)
+                            .reduce((a, sg) => a + sg.share, 0);
+            const bottom = segs.filter(sg => sg.responseIndex < boxN)
+                               .reduce((a, sg) => a + sg.share, 0);
+
+            this.rows.push({
+                question: String(qCol.values[i] ?? ""),
+                group: gCol && proNow ? String(gCol.values[i] ?? "") : null,
+                total, segments: segs, negShare: neg, posShare: pos,
+                topBox: top, bottomBox: bottom,
+                selectionId: this.host.createSelectionIdBuilder().withCategory(qCol, i).createSelectionId()
+            });
+        }
+    }
+
+    /** Rampa divergente entre los dos extremos, pasando por el neutro. */
+    private scaleColors(count: number, dv: DataView): string[] {
+        const s = this.settings.colors;
+        const groups = dv.categorical.values.grouped ? dv.categorical.values.grouped() : [];
+        const pal: any = (this.host as any).colorPalette;
+        const hc = !!pal?.isHighContrast;
+        const out: string[] = [];
+        const negN = Math.max(1, Math.min(this.settings.scale.negativeCount, count));
+        for (let i = 0; i < count; i++) {
+            // Color por punto de escala puesto a mano o por regla (fx) sobre colors.fill.
+            const objs: any = groups[i]?.objects;
+            const own = objs?.colors?.fill?.solid?.color;
+            if (own) { out.push(own); continue; }
+            if (hc) {
+                out.push(i < negN ? (pal.foreground?.value ?? "#FFF") : (pal.foregroundSelected?.value ?? "#FFF"));
+                continue;
+            }
+            const t = count <= 1 ? 0 : i / (count - 1);
+            const mid = negN / Math.max(count - 1, 1);
+            out.push(t <= mid
+                ? mix(s.negativeColor, s.neutralColor, mid ? t / mid : 1)
+                : mix(s.neutralColor, s.positiveColor, (t - mid) / Math.max(1 - mid, 0.001)));
+        }
+        return out;
+    }
+
+    // ── Render ────────────────────────────────────────────────────────────────
+
+    private clearSvg(): void {
+        while (this.svg.firstChild) { this.svg.removeChild(this.svg.firstChild); }
+    }
+
+    private renderLanding(w: number, h: number): void {
+        this.clearSvg();
+        this.svg.setAttribute("width", String(w));
+        this.svg.setAttribute("height", String(h));
+        const g = el("g");
+        const t1 = text(w / 2, h / 2 - 16, "Likert Survey Pro", 15, "#3B4252", "middle");
+        t1.setAttribute("font-weight", "600");
+        const t2 = text(w / 2, h / 2 + 8,
+            "Add Question, Response and Value to draw the diverging scale.", 12, "#4C566A", "middle");
+        g.appendChild(t1); g.appendChild(t2);
+        this.svg.appendChild(g);
+    }
+
+    private render(w: number, h: number): void {
+        this.clearSvg();
+        this.svg.setAttribute("width", String(w));
+        this.svg.setAttribute("height", String(h));
+        this.svg.setAttribute("role", "img");
+
+        const s = this.settings;
+        const legendH = s.legend.show ? 22 : 0;
+        const topPad = s.legend.position === "top" ? legendH + 6 : 6;
+        const botPad = s.legend.position === "bottom" ? legendH + 6 : 6;
+        const qW = Math.max(60, Math.min(w * (s.labels.questionWidth / 100), w * 0.6));
+        const boxW = (s.boxes.show || s.boxes.showNps) ? 96 : 0;
+        const barLeft = qW + 8;
+        const barW = Math.max(40, w - barLeft - boxW - 10);
+        const centre = barLeft + barW / 2;
+
+        const rowsH = Math.max(h - topPad - botPad, 10);
+        const rowH = Math.max(14, Math.min(46, rowsH / Math.max(this.rows.length, 1)));
+
+        if (s.legend.show) { this.renderLegend(w, s.legend.position === "top" ? 4 : h - legendH + 2); }
+
+        // Eje del centro: es lo que hace legible una escala divergente.
+        const axis = el("line");
+        axis.setAttribute("x1", String(centre)); axis.setAttribute("x2", String(centre));
+        axis.setAttribute("y1", String(topPad)); axis.setAttribute("y2", String(topPad + rowH * this.rows.length));
+        axis.setAttribute("stroke", "#4C566A"); axis.setAttribute("stroke-width", "1");
+        this.svg.appendChild(axis);
+
+        if (s.benchmark.show) {
+            const x = centre + (s.benchmark.value / 100) * (barW / 2);
+            const bl = el("line");
+            bl.setAttribute("x1", String(x)); bl.setAttribute("x2", String(x));
+            bl.setAttribute("y1", String(topPad)); bl.setAttribute("y2", String(topPad + rowH * this.rows.length));
+            bl.setAttribute("stroke", s.benchmark.color);
+            bl.setAttribute("stroke-width", "2"); bl.setAttribute("stroke-dasharray", "4,3");
+            this.svg.appendChild(bl);
+        }
+
+        let lastGroup: string | null = null;
+        this.rows.forEach((row, ri) => {
+            const y = topPad + ri * rowH;
+            const barH = Math.max(6, rowH * 0.62);
+            const by = y + (rowH - barH) / 2;
+
+            if (row.group && row.group !== lastGroup) {
+                const gt = text(4, y + rowH * 0.42, row.group, s.labels.fontSize, "#4C566A", "start");
+                gt.setAttribute("font-weight", "600");
+                this.svg.appendChild(gt);
+                lastGroup = row.group;
+            }
+
+            const qt = text(qW, y + rowH * 0.62, ellipsis(row.question, qW, s.labels.fontSize),
+                            s.labels.fontSize, s.labels.textColor, "end");
+            this.svg.appendChild(qt);
+
+            // Izquierda desde el centro hacia fuera, para que el neutro quede pegado al eje.
+            let x = centre - row.negShare * (barW / 2);
+            row.segments.forEach(sg => {
+                const half = sg.responseIndex === (this.settings.scale.neutralMode === "split"
+                    ? this.settings.scale.negativeCount : -1);
+                const wdt = (half ? sg.share : sg.share) * (barW / 2);
+                const width = Math.max(0, wdt);
+                const r = el("rect");
+                r.setAttribute("x", String(x)); r.setAttribute("y", String(by));
+                r.setAttribute("width", String(width)); r.setAttribute("height", String(barH));
+                r.setAttribute("fill", sg.color);
+                r.setAttribute("opacity", sg.highlighted ? "1" : "0.3");
+                r.setAttribute("data-seg", "1");
+                r.setAttribute("tabindex", "-1");
+                r.setAttribute("role", "img");
+                r.setAttribute("aria-label",
+                    `${row.question}, ${sg.label}: ${(sg.share * 100).toFixed(1)}%`);
+                (r as any).__sid = sg.selectionId;
+                (r as any).__tip = sg.tooltip;
+                this.svg.appendChild(r);
+
+                if (s.labels.showValues && sg.share * 100 >= s.labels.minSegment && width > 16) {
+                    const lbl = text(x + width / 2, by + barH * 0.72,
+                        s.scale.asPercent ? `${(sg.share * 100).toFixed(s.labels.decimals)}%`
+                                          : String(Math.round(sg.value)),
+                        Math.min(s.labels.fontSize, barH * 0.6), readable(sg.color), "middle");
+                    lbl.setAttribute("pointer-events", "none");
+                    this.svg.appendChild(lbl);
+                }
+                x += width;
+            });
+
+            if (s.boxes.show || s.boxes.showNps) {
+                const bx = barLeft + barW + 8;
+                const parts: string[] = [];
+                if (s.boxes.show) {
+                    parts.push(`${(row.topBox * 100).toFixed(0)}% / ${(row.bottomBox * 100).toFixed(0)}%`);
+                }
+                if (s.boxes.showNps) {
+                    const nps = (row.topBox - row.bottomBox) * 100;
+                    parts.push(`${nps >= 0 ? "+" : ""}${nps.toFixed(0)}`);
+                }
+                const bt = text(bx, y + rowH * 0.62, parts.join("  ·  "),
+                                s.labels.fontSize, s.labels.textColor, "start");
+                this.svg.appendChild(bt);
+            }
+        });
+
+        this.attachTooltips();
+        this.restoreFocus();
+    }
+
+    private renderLegend(w: number, y: number): void {
+        let x = 8;
+        const fs = Math.max(9, this.settings.labels.fontSize - 1);
+        this.responseLabels.forEach((lab, i) => {
+            const sw = el("rect");
+            sw.setAttribute("x", String(x)); sw.setAttribute("y", String(y));
+            sw.setAttribute("width", "11"); sw.setAttribute("height", "11");
+            sw.setAttribute("rx", "2"); sw.setAttribute("fill", this.responseColors[i]);
+            this.svg.appendChild(sw);
+            const t = text(x + 15, y + 10, lab, fs, this.settings.labels.textColor, "start");
+            this.svg.appendChild(t);
+            x += 15 + lab.length * fs * 0.58 + 12;
+            if (x > w - 40) { x = 8; y += 14; }
+        });
+    }
+
+    private attachTooltips(): void {
+        const svc: any = (this.host as any).tooltipService;
+        if (!svc) { return; }
+        const segs = this.svg.querySelectorAll("[data-seg]");
+        segs.forEach(node => {
+            const show = (ev: MouseEvent | FocusEvent) => {
+                const r = (node as SVGElement).getBoundingClientRect();
+                svc.show({
+                    dataItems: (node as any).__tip,
+                    identities: [(node as any).__sid],
+                    coordinates: [(ev as MouseEvent).clientX ?? r.left + r.width / 2,
+                                  (ev as MouseEvent).clientY ?? r.top],
+                    isTouchEvent: false
+                });
+            };
+            node.addEventListener("mousemove", show as EventListener);
+            node.addEventListener("focus", show as EventListener);
+            const hide = () => svc.hide({ immediately: false, isTouchEvent: false });
+            node.addEventListener("mouseout", hide);
+            node.addEventListener("blur", hide);
+        });
+    }
+
+    // ── Teclado: roving tabindex, una sola parada de Tab ──────────────────────
+
+    private restoreFocus(): void {
+        const segs = this.svg.querySelectorAll("[data-seg]");
+        if (!segs.length) { return; }
+        const i = Math.max(0, Math.min(this.focusIndex, segs.length - 1));
+        (segs[this.focusIndex >= 0 ? i : 0] as SVGElement).setAttribute("tabindex", "0");
+    }
+
+    private onKeyDown(e: KeyboardEvent): void {
+        const segs = Array.from(this.svg.querySelectorAll("[data-seg]")) as SVGElement[];
+        if (!segs.length) { return; }
+        const cur = segs.indexOf(document.activeElement as any);
+        let next = cur;
+        switch (e.key) {
+            case "ArrowRight": next = Math.min(cur + 1, segs.length - 1); break;
+            case "ArrowLeft":  next = Math.max(cur - 1, 0); break;
+            case "Home":       next = 0; break;
+            case "End":        next = segs.length - 1; break;
+            case "Enter":
+            case " ":
+                if (cur >= 0) {
+                    e.preventDefault();
+                    this.selectionManager.select((segs[cur] as any).__sid, e.ctrlKey || e.metaKey);
+                }
+                return;
+            case "Escape":
+                this.selectionManager.clear();
+                return;
+            case "F10":
+                if (e.shiftKey && cur >= 0) {
+                    e.preventDefault();
+                    const r = segs[cur].getBoundingClientRect();
+                    this.selectionManager.showContextMenu((segs[cur] as any).__sid,
+                        { x: r.left + r.width / 2, y: r.top + r.height });
+                }
+                return;
+            default: return;
+        }
+        e.preventDefault();
+        segs.forEach(s => s.setAttribute("tabindex", "-1"));
+        segs[next].setAttribute("tabindex", "0");
+        (segs[next] as any).focus?.();
+        this.focusIndex = next;
+    }
+
+    // ── Ajustes ───────────────────────────────────────────────────────────────
+
+    /**
+     * Panel de formato con la API nueva. El modelo declarativo muestra SIEMPRE lo que eligió
+     * el usuario, no lo que pinta el tier gratuito: si mostrara lo gateado, un ajuste Pro se
+     * apagaría solo al activarlo y parecería roto.
+     */
+    public getFormattingModel(): powerbi.visuals.FormattingModel {
+        return this.formattingService.buildFormattingModel(this.formattingModel);
+    }
+}
+
+// ── Utilidades ────────────────────────────────────────────────────────────────
+
+function el(tag: string): SVGElement {
+    return document.createElementNS(SVG_NS, tag) as SVGElement;
+}
+
+function text(x: number, y: number, content: string, size: number, color: string, anchor: string): SVGElement {
+    const t = el("text");
+    t.setAttribute("x", String(x)); t.setAttribute("y", String(y));
+    t.setAttribute("font-size", String(size));
+    t.setAttribute("fill", color);
+    t.setAttribute("text-anchor", anchor);
+    t.setAttribute("font-family", "'Segoe UI',system-ui,sans-serif");
+    t.textContent = content;   // nunca innerHTML: es dato del usuario
+    return t;
+}
+
+/** Ancho estimado con el tamaño de fuente real: 0.58 em de media en Segoe UI. */
+function ellipsis(s: string, maxPx: number, fontSize: number): string {
+    const per = fontSize * 0.58;
+    const max = Math.max(3, Math.floor((maxPx - 6) / per));
+    return s.length <= max ? s : s.slice(0, max - 1) + "…";
+}
+
+function mix(a: string, b: string, t: number): string {
+    const A = hex(a), B = hex(b), k = Math.max(0, Math.min(1, t));
+    const c = (i: number) => Math.round(A[i] + (B[i] - A[i]) * k);
+    const hx = (v: number) => (v < 16 ? "0" : "") + v.toString(16);
+    return `#${hx(c(0))}${hx(c(1))}${hx(c(2))}`;
+}
+
+function hex(c: string): number[] {
+    const m = /^#?([0-9a-f]{6})$/i.exec(c.trim());
+    if (!m) { return [128, 128, 128]; }
+    const v = parseInt(m[1], 16);
+    return [(v >> 16) & 255, (v >> 8) & 255, v & 255];
+}
+
+/** Texto legible sobre el relleno: luminancia relativa simplificada. */
+function readable(bg: string): string {
+    const [r, g, b] = hex(bg);
+    return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? "#2E3440" : "#FFFFFF";
+}

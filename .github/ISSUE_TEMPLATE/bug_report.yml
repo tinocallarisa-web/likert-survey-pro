@@ -1,0 +1,44 @@
+name: Bug report
+description: Something does not work as documented
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, please check the [documentation](https://tinocallarisa-web.github.io/likert-survey-pro/support.html).
+        If the scale looks out of order, make sure the Response column is sorted by a numeric
+        order column in the model — that is the most common cause.
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Tier
+      options: ["Free", "Pro", "Pro trial"]
+    validations: { required: true }
+  - type: dropdown
+    id: env
+    attributes:
+      label: Where does it happen
+      options: ["Power BI Desktop", "Power BI Service", "Both", "Publish to Web / embedded", "Export to PDF or PowerPoint"]
+    validations: { required: true }
+  - type: input
+    id: version
+    attributes:
+      label: Visual version
+      description: Format pane → About, or the visual's information panel.
+    validations: { required: true }
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations: { required: true }
+  - type: textarea
+    id: shape
+    attributes:
+      label: Shape of the data
+      description: Number of questions, number of scale points, rough row count, and which wells are filled.
+    validations: { required: true }
+  - type: textarea
+    id: console
+    attributes:
+      label: Browser console output
+      description: F12 → Console. Optional, but it usually settles the question in one step.
