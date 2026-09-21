@@ -225,6 +225,7 @@
         "rowGap": {
           "displayName": "Gap between rows (px)",
           "displayNameKey": "Prop_LayoutRowGap",
+          "description": "Vertical separation between bars. At 0 the bars fill the row and touch each other; raise it to give them air.",
           "type": { "numeric": true }
         }
       }

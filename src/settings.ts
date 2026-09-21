@@ -142,7 +142,7 @@ class LayoutCard extends Card {
         name: "segmentGap", displayNameKey: "Prop_LayoutSegmentGap", value: 1
     });
     rowGap = new formattingSettings.NumUpDown({
-        name: "rowGap", displayNameKey: "Prop_LayoutRowGap", value: 0
+        name: "rowGap", displayNameKey: "Prop_LayoutRowGap", value: 6
     });
     name = "layout";
     displayNameKey = "Obj_Layout";
@@ -225,7 +225,7 @@ export function toSettings(m: LikertFormattingModel): LikertSettings {
             enableScroll: !!m.layout.enableScroll.value,
             minRowHeight: clamp(m.layout.minRowHeight.value, 12, 80, 26),
             segmentGap:   clamp(m.layout.segmentGap.value, 0, 6, 1),
-            rowGap:       clamp(m.layout.rowGap.value, 0, 20, 0),
+            rowGap:       clamp(m.layout.rowGap.value, 0, 40, 6),
         },
         legend: {
             show: !!m.legend.show.value,

@@ -600,7 +600,10 @@ export class Visual implements IVisual {
         let lastGroup: string | null = null;
         this.rows.forEach((row, ri) => {
             const y = topPad + ri * rowH;
-            const barH = Math.max(6, rowH * 0.62 - s.layout.rowGap);
+            // El alto de barra es la fila MENOS la separación: con separación 0 las barras
+            // se tocan. Antes era un 62% fijo de la fila y el hueco se restaba de ahí, así
+            // que el 38% de blanco era inamovible y el control solo podía empeorarlo.
+            const barH = Math.max(4, rowH - s.layout.rowGap);
             const by = y + (rowH - barH) / 2;
 
             if (row.group && row.group !== lastGroup) {
