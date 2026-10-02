@@ -1,4 +1,4 @@
-# Likert Survey Pro — Tips & Hints (v1.0.0.0)
+# Likert Survey Pro — Tips & Hints (v1.0.0.1)
 
 **TCViz** · support@tcviz.com
 Demo video: https://www.youtube.com/watch?v=SzSs3gFReaY

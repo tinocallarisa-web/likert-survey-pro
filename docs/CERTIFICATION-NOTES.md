@@ -1,9 +1,19 @@
-# Certification Notes — Likert Survey Pro v1.0.0.0
+# Certification Notes — Likert Survey Pro v1.0.0.1
 
 **Visual GUID:** `likertSurveyProTCViz976FC0D15EE24876A338A1A985F3B2BC`
 **Plan ID:** `likert-survey-pro-tcviz` (Service ID `tino_callarisa.likert-survey-pro.likert-survey-pro-tcviz`)
 **Publisher:** TCViz (support@tcviz.com)
-**Version:** 1.0.0.0 — first submission
+**Version:** 1.0.0.1 — resubmission of 1.0.0.0
+
+## Resubmission — 1200.1.2 Code Quality, fixed
+
+The review found `update()` calls emitting `renderingStarted` / `renderingFinished` more than
+once. Cause: when the licence resolved after the first render, the visual repainted by calling
+`update()` again, emitting a second pair for the same host update. Now `update()` delegates to
+`run(options, emit = true)`; the licence repaint calls `run(options, false)`, which renders
+without emitting. Every host `update()` emits exactly one `renderingStarted` followed by exactly
+one `renderingFinished` or `renderingFailed`, on every exit path. Verified in Power BI Desktop
+with a test build that counts the events on screen (`node build-test.js --free --events`).
 **Submission date:** (fill on submission)
 
 ---

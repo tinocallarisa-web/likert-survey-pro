@@ -1,6 +1,6 @@
 {
   "name": "likert-survey-pro",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Diverging stacked bars for Likert and survey data. Certified, no network access.",
   "author": {
     "name": "TCViz",

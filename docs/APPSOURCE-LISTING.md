@@ -43,7 +43,7 @@ THE SCALE, HANDLED PROPERLY
 • Diverging colour ramp, plus conditional formatting on the scale colour
 • Data labels with a threshold that hides the ones too small to read
 
-INTEGRATED WITH POWER BI
+NATIVE INTEGRATION
 
 • Click a segment to cross-filter the report; Ctrl + click to add; click outside to clear
 • Filters from other visuals are reflected in the bars
@@ -83,7 +83,7 @@ GETTING STARTED
 Documentation, video and sample data: https://tinocallarisa-web.github.io/likert-survey-pro/support.html
 Support: support@tcviz.com
 
-WHAT'S NEW IN 1.0.0.0
+WHAT'S NEW IN 1.0.0.1
 
 First release.
 ```

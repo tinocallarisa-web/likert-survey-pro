@@ -231,7 +231,10 @@ export class Visual implements IVisual {
      * resultado gratuito hasta que toca cualquier ajuste.
      */
     private afterLicense(): void {
-        if (this.lastOptions) { this.update(this.lastOptions); }
+        // Repintado INTERNO: no emite eventos de render. Cada update() de Power BI tiene que
+        // emitir exactamente un renderingStarted y un renderingFinished/Failed (rechazo
+        // 1200.1.2 de Microsoft, 02-10-2026: esta llamada duplicaba el par de eventos).
+        if (this.lastOptions) { this.run(this.lastOptions, false); }
     }
 
     private computePreview(): boolean {
@@ -309,7 +312,16 @@ export class Visual implements IVisual {
     // ── Update ────────────────────────────────────────────────────────────────
 
     public update(options: VisualUpdateOptions): void {
-        this.events.renderingStarted(options);
+        this.run(options, true);
+    }
+
+    /**
+     * Cuerpo del render. emit=true solo desde update(): ahi se emite el par de eventos que
+     * Power BI espera, exactamente uno por llamada. Los repintados internos (licencia
+     * resuelta) pasan emit=false.
+     */
+    private run(options: VisualUpdateOptions, emit: boolean): void {
+        if (emit) { this.events.renderingStarted(options); }
         try {
             this.lastOptions = options;
             const dv = options.dataViews?.[0];
@@ -326,7 +338,7 @@ export class Visual implements IVisual {
                 this.updateWatermark();
                 this.renderLanding(w, h);
                 this.requestLicenseDeferred();
-                this.events.renderingFinished(options);
+                if (emit) { this.events.renderingFinished(options); }
                 return;
             }
 
@@ -343,9 +355,9 @@ export class Visual implements IVisual {
             this.syncLicenseNotification();
             this.updateWatermark();
 
-            this.events.renderingFinished(options);
+            if (emit) { this.events.renderingFinished(options); }
         } catch (e) {
-            this.events.renderingFailed(options, String(e));
+            if (emit) { this.events.renderingFailed(options, String(e)); }
         }
     }
 

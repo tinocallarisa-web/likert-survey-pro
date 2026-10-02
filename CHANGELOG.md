@@ -5,9 +5,23 @@ Versioning follows `MAJOR.MINOR.PATCH.BUILD` in `pbiviz.json` and semver in `pac
 
 ---
 
-## [1.0.0.0] — unreleased
+## [1.0.0.1] — 2026-10-02
 
-First version.
+First published version. Resubmission of 1.0.0.0 after certification review.
+
+### Fixed
+- **Rendering events: exactly one pair per `update()`.** When the licence resolved after the
+  first render, the visual repainted by calling `update()` again, which emitted a second
+  `renderingStarted` / `renderingFinished` pair for a single host update (Microsoft policy
+  1200.1.2). The repaint now runs the render without emitting events; only the host's
+  `update()` emits them, once. Verified with an on-screen event counter in a test build:
+  loading, licence resolution, resize, formatting changes, Pro preview, cross-filtering and
+  page switches all stay 1:1.
+
+## [1.0.0.0] — 2026-09-21 — submitted, not published
+
+First version. Returned by certification (1200.1.2, see 1.0.0.1); Partner Center keeps the
+number, so the first published version is 1.0.0.1.
 
 ### Added
 - Diverging stacked bars centred on the neutral response, one bar per question.

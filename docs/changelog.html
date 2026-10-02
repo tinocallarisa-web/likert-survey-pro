@@ -16,12 +16,19 @@
 </head>
 <body>
   <h1>Changelog — Likert Survey Pro</h1>
-  <p><strong>Current version:</strong> 1.0.0.0 · <a href="mailto:support@tcviz.com">support@tcviz.com</a></p>
+  <p><strong>Current version:</strong> 1.0.0.1 · <a href="mailto:support@tcviz.com">support@tcviz.com</a></p>
   <nav><a href="support.html">Support</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
 <p>All notable changes to this visual are documented here.</p>
 <p>Versioning follows <code>MAJOR.MINOR.PATCH.BUILD</code> in <code>pbiviz.json</code> and semver in <code>package.json</code>.</p>
-<h2>[1.0.0.0] — unreleased</h2>
-<p>First version.</p>
+<h2>[1.0.0.1] — 2026-10-02</h2>
+<p>First published version. Resubmission of 1.0.0.0 after certification review.</p>
+<h3>Fixed</h3>
+<ul>
+<li><strong>Rendering events: exactly one pair per <code>update()</code>.</strong> When the licence resolved after the first render, the visual repainted by calling <code>update()</code> again, which emitted a second <code>renderingStarted</code> / <code>renderingFinished</code> pair for a single host update (Microsoft policy 1200.1.2). The repaint now runs the render without emitting events; only the host's <code>update()</code> emits them, once. Verified with an on-screen event counter in a test build: loading, licence resolution, resize, formatting changes, Pro preview, cross-filtering and page switches all stay 1:1.</li>
+</ul>
+<h2>[1.0.0.0] — 2026-09-21 — submitted, not published</h2>
+<p>First version. Returned by certification (1200.1.2, see 1.0.0.1); Partner Center keeps the</p>
+<p>number, so the first published version is 1.0.0.1.</p>
 <h3>Added</h3>
 <ul>
 <li>Diverging stacked bars centred on the neutral response, one bar per question.</li>

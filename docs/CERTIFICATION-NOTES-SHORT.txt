@@ -1,7 +1,11 @@
-Likert Survey Pro 1.0.0.0 GUID likertSurveyProTCViz976FC0D15EE24876A338A1A985F3B2BC
+Likert Survey Pro 1.0.0.1 GUID likertSurveyProTCViz976FC0D15EE24876A338A1A985F3B2BC
 Source (branch certification): github.com/tinocallarisa-web/likert-survey-pro
 Pages (support, privacy, terms): tinocallarisa-web.github.io/likert-survey-pro
 Video: youtube.com/watch?v=SzSs3gFReaY | Full notes in docs/
+
+RESUBMISSION - 1200.1.2 FIXED
+Each update() emits exactly one renderingStarted and one Finished/Failed; the repaint
+after the licence resolves no longer calls update().
 
 PLEASE READ FIRST - PRO PREVIEW
 Without a licence, IN EDIT MODE ONLY, Pro options render working under a "Pro preview"
@@ -19,8 +23,7 @@ TESTING - FREE (no active plan)
 5. Click a segment: the report filters; Ctrl+click adds. Tab in, arrows move, Enter
    selects, Escape clears, Shift+F10 the menu.
 6. Resize very narrow: the question column is capped, the bars stay visible.
-With the "likert-survey-pro-tcviz" plan active they render with no watermark. Its
-one-month free trial resolves as Active, same path as a paid licence.
+Plan "likert-survey-pro-tcviz" active (or its trial): no watermark.
 
 PRIVACY/NETWORK
 No network calls, telemetry, cookies or storage; privileges: []; the audit finds no
@@ -28,11 +31,10 @@ external requests. No innerHTML/outerHTML: SVG via createElementNS, data via tex
 ESLint clean, npm audit 0.
 
 LICENSING
-IVisualLicenseManager only; no licence key field, no licensing UI of our own. Requested
-once after the first render, never blocking it; failure stays Free with no prompts. It
-accepts the short plan id or any Service ID ending ".likert-survey-pro-tcviz", state Active
-or Warning. isLicenseUnsupportedEnv and isLicenseInfoAvailable honoured; blocked features
-use notifyFeatureBlocked + notifyLicenseRequired, cleared by clearLicenseNotification.
+IVisualLicenseManager only; no own licensing UI or key field. Requested once after the
+first render, never blocking it; failure stays Free, no prompts. Plan id or Service ID
+ending ".likert-survey-pro-tcviz", Active or Warning. Unsupported environments honoured;
+notifyFeatureBlocked + notifyLicenseRequired, cleared by clearLicenseNotification.
 
 KNOWN GAPS (next release)
 1. High contrast is partial: the scale takes the theme foreground colours so the
