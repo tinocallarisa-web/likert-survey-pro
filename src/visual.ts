@@ -636,9 +636,15 @@ export class Visual implements IVisual {
             (m, r) => Math.max(m, r.question.length * s.qtable.questionFontSize * 0.58), 0);
         const qW = Math.max(60, Math.min(tope, anchoTexto + 12));
         const leftW = blockW + qW;
-        const boxW = (s.boxes.show ? s.boxes.fontSize * 5.2 : 0)
-                   + (s.boxes.showNps ? s.boxes.fontSize * 3.6 : 0)
-                   + ((s.boxes.show || s.boxes.showNps) ? 20 : 0);
+        // Ancho reservado a la derecha, MEDIDO sobre los textos reales (mismo calculo que las
+        // columnas fijas del render): una estimacion fija se quedaba corta con "100% / 100%".
+        const bf = s.boxes.fontSize;
+        const pct = (v: number) => `${(v * 100).toFixed(0)}%`;
+        const boxW = (s.boxes.show
+                        ? this.rows.reduce((m, r) => Math.max(m, `${pct(r.topBox)} / ${pct(r.bottomBox)}`.length * bf * 0.58), 0) + 10 : 0)
+                   + (s.boxes.showNps
+                        ? Math.max(bf * 1.75, this.rows.reduce((m, r) => Math.max(m, String(Math.round((r.topBox - r.bottomBox) * 100)).length + 1), 0) * bf * 0.62 + bf * 1.2) : 0)
+                   + ((s.boxes.show || s.boxes.showNps) ? 10 : 0);
 
         // Altura de fila: con scroll se respeta el minimo legible y el lienzo crece; sin
         // scroll las filas encogen hasta que todo cabe. Recortar filas por abajo no es una
@@ -756,6 +762,23 @@ export class Visual implements IVisual {
             }
         }
 
+        // COLUMNAS FIJAS a la derecha (Tino, 02-10-2026: "las pills tendrian que salir
+        // alineadas"). El texto top/bottom box cambia de ancho por fila ("8% / 76%" frente a
+        // "39% / 37%"); si la pildora va detras del texto, baila. Se mide el texto mas ancho,
+        // el texto se alinea a la derecha de su columna y todas las pildoras empiezan en el
+        // mismo x y miden lo mismo.
+        const boxTxt = (r: { topBox: number; bottomBox: number }) =>
+            `${(r.topBox * 100).toFixed(0)}% / ${(r.bottomBox * 100).toFixed(0)}%`;
+        const npsTxt = (r: { topBox: number; bottomBox: number }) => {
+            const v = (r.topBox - r.bottomBox) * 100;
+            return `${v >= 0 ? "+" : ""}${v.toFixed(0)}`;
+        };
+        const bfs = s.boxes.fontSize;
+        const boxColW = s.boxes.show
+            ? this.rows.reduce((m, r) => Math.max(m, boxTxt(r).length * bfs * 0.58), 0) : 0;
+        const pillW = s.boxes.showNps
+            ? this.rows.reduce((m, r) => Math.max(m, npsTxt(r).length * bfs * 0.62 + bfs * 1.2), 0) : 0;
+
         this.rows.forEach((row, ri) => {
             const y = topPad + ri * rowH;
             // El alto de barra es la fila MENOS la separación: con separación 0 las barras
@@ -813,20 +836,19 @@ export class Visual implements IVisual {
                 let bx = barLeft + barW + 10;
 
                 if (s.boxes.show) {
-                    const txt = `${(row.topBox * 100).toFixed(0)}% / ${(row.bottomBox * 100).toFixed(0)}%`;
-                    const bt = text(bx, cy + fs * 0.36, txt, fs, s.boxes.textColor, "start");
+                    const bt = text(bx + boxColW, cy + fs * 0.36, boxTxt(row), fs, s.boxes.textColor, "end");
                     this.svg.appendChild(bt);
-                    bx += txt.length * fs * 0.58 + 10;
+                    bx += boxColW + 10;
                 }
 
                 if (s.boxes.showNps) {
                     // Pildora en vez de texto coloreado: el NPS es la cifra que se busca de
                     // un vistazo, y un numero suelto se pierde entre el resto del texto.
                     const nps = (row.topBox - row.bottomBox) * 100;
-                    const etq = `${nps >= 0 ? "+" : ""}${nps.toFixed(0)}`;
+                    const etq = npsTxt(row);
                     const fondo = nps >= 0 ? s.boxes.npsPositive : s.boxes.npsNegative;
                     const ph = Math.min(fs * 1.75, Math.max(barH, fs * 1.3));
-                    const pw = Math.max(ph, etq.length * fs * 0.62 + fs * 1.2);
+                    const pw = Math.max(ph, pillW);
                     const pill = el("rect");
                     pill.setAttribute("x", String(bx));
                     pill.setAttribute("y", String(cy - ph / 2));

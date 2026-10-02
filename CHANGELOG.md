@@ -17,6 +17,11 @@ First published version. Resubmission of 1.0.0.0 after certification review.
   `update()` emits them, once. Verified with an on-screen event counter in a test build:
   loading, licence resolution, resize, formatting changes, Pro preview, cross-filtering and
   page switches all stay 1:1.
+- **Top/bottom box and NPS columns aligned.** The NPS pill was drawn right after the
+  top/bottom box text, whose width changes per row ("8% / 76%" against "39% / 37%"), so the
+  pills zig-zagged. The text is now right-aligned in its own column and every pill starts at
+  the same x with the same width. The space reserved on the right is measured on the real
+  texts instead of estimated, so "100% / 100%" no longer overflows.
 
 ## [1.0.0.0] — 2026-09-21 — submitted, not published
 
