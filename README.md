@@ -2,7 +2,7 @@
 
 Diverging stacked bars for Likert and survey data, centred on the neutral response.
 
-**Certified, with no network access.** `privileges` is `[]`: the visual makes no HTTP
+**Built for Microsoft certification: no network access.** `privileges` is `[]`: the visual makes no HTTP
 requests, opens no sockets, stores nothing and needs no companion service. No data leaves
 the report.
 
