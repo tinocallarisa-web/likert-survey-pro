@@ -42,6 +42,8 @@ const STATE_ACTIVE = 1;
 const STATE_WARNING = 2;
 /** Marca de la build de prueba: build-test.js la rellena; en producción queda vacía y no se pinta. */
 const TEST_STAMP = ""; // TEST_STAMP_MARKER
+/** Diagnóstico de datos (solo build de prueba: build-test.js --debug). En producción, false y no se pinta nada. */
+const DEBUG_DATA = false;
 
 /** Enlaces de la pantalla de inicio. ?ref= cuenta en la web las visitas que llegan desde el visual. */
 const URL_GUIDE = "https://tinocallarisa-web.github.io/likert-survey-pro/support.html";
@@ -775,6 +777,7 @@ export class Visual implements IVisual {
         qs.sort((x, y) => (gOrder.get(x.group) ?? 0) - (gOrder.get(y.group) ?? 0) || x.i - y.i);
         this.qOrder = qs.map(q => q.qKey);
         this.collectBlocks();
+        if (DEBUG_DATA) { this.debugLine = this.debugData(dv, kept); }
     }
 
     /** Filas de un panel en el orden común; null donde el panel no tiene esa pregunta. */
@@ -821,12 +824,12 @@ export class Visual implements IVisual {
      *  - si no (p. ej. Scale order = Suma y Value = la misma suma), no es fiable: se ordena por el
      *    mínimo, como en la 1.0, la media usa la posición 1, 2, 3… y una nota lo dice.
      */
-    private orderInfo(groups: any[]): { ranks: (number | null)[]; reliable: boolean; varies: boolean } {
+    private orderInfo(groups: any[]): { ranks: (number | null)[]; reliable: boolean; varies: boolean; how: string[] } {
         const eq = (a: number[]) => a.every(x => Math.abs(x - a[0]) <= 1e-9 * Math.max(1, Math.abs(a[0])));
         const per = groups.map(g => {
             const vals = (g?.values as any[]) ?? [];
             const oc = vals.find(v => v?.source?.roles?.order);
-            if (!oc) { return { r: null as number | null, ok: false, min: null as number | null }; }
+            if (!oc) { return { r: null as number | null, ok: false, min: null as number | null, how: "no-order-col" }; }
             const vc = vals.find(v => v?.source?.roles?.value);
             const os: number[] = [], rs: number[] = [];
             for (let i = 0; i < (oc.values?.length ?? 0); i++) {
@@ -836,20 +839,62 @@ export class Visual implements IVisual {
                 const v = vc && vc !== oc ? this.num(vc.values?.[i]) : null;
                 if (v !== null && v > 0) { rs.push(o / v); }
             }
-            if (!os.length) { return { r: null, ok: false, min: null }; }
+            if (!os.length) { return { r: null, ok: false, min: null, how: "no-values" }; }
             const min = Math.min(...os);
-            if (eq(os)) { return { r: os[0], ok: true, min }; }
-            if (rs.length && eq(rs) && (vc?.source?.queryName !== oc.source?.queryName)) { return { r: rs[0], ok: true, min }; }
-            return { r: min, ok: false, min };
+            if (eq(os)) { return { r: os[0], ok: true, min, how: "const" }; }
+            if (rs.length && eq(rs) && (vc?.source?.queryName !== oc.source?.queryName)) { return { r: rs[0], ok: true, min, how: "ratio" }; }
+            return { r: min, ok: false, min, how: "min(" + os.length + "f," + (vc === oc ? "misma col" : "rs" + rs.length) + ")" };
         });
         const ranks = per.map(p => p.r);
         const present = ranks.filter(r => r !== null) as number[];
         const distinct = new Set(present.map(r => r.toPrecision(12))).size === present.length;
         const reliable = present.length === groups.length && per.every(p => p.ok) && distinct;
-        return { ranks, reliable, varies: present.length > 0 && !reliable };
+        return { ranks, reliable, varies: present.length > 0 && !reliable, how: per.map(p => p.how) };
     }
 
     private orderVaries = false;
+    private debugLine = "";
+    private debugEl: HTMLDivElement | null = null;
+
+    /** Lo que manda Power BI, en texto: columnas, roles, grupos y lo que decide orderInfo en el primer bloque. */
+    private debugData(dv: DataView, kept: any[]): string {
+        const r = (o: any) => Object.keys(o?.roles || {}).join("+") || "-";
+        const cat = dv.categorical;
+        const C = cat.categories.map((c, i) => `C${i}[${r(c.source)}] ${c.source.queryName} n=${c.values.length}`).join(" | ");
+        const V = (cat.values as any[]).slice(0, 12).map((v, i) =>
+            `V${i}[${r(v.source)}] "${v.source.displayName}" ${v.source.queryName}${v.source.isMeasure ? " M" : ""} g=${v.source.groupName ?? "-"}`).join(" | ");
+        const md = (dv.metadata?.columns || []).map(c => `${c.displayName}[${r(c)}]`).join(", ");
+        const grouped = cat.values.grouped ? cat.values.grouped() : [];
+        const G = `grouped=${!!cat.values.grouped} grupos=${grouped.length} [${grouped.map(g => String(g.name)).join(", ")}] cols/grupo=${grouped[0]?.values?.length ?? 0}`
+            + ` roles/grupo=${(grouped[0]?.values as any[] ?? []).map(v => r(v.source)).join(",")}`;
+        const info = this.orderInfo(kept);
+        const b = this.blocks[0];
+        const rowsB = b ? this.rows.filter(x => x.group === b.name) : this.rows.slice(0, 3);
+        const qCols = cat.categories.filter(c => c.source.roles?.["question"]);
+        const ql = qCols[qCols.length - 1] ?? cat.categories[0];
+        const idx: number[] = [];
+        for (let i = 0; i < ql.values.length && idx.length < 4; i++) {
+            if (rowsB.some(x => x.question === this.name(ql.values[i]))) { idx.push(i); }
+        }
+        const pts = kept.map((g, k) => {
+            const oc = (g.values as any[]).find(v => v?.source?.roles?.order);
+            const vc = (g.values as any[]).find(v => v?.source?.roles?.value);
+            return `${String(g.name)}: O=${idx.map(i => oc?.values?.[i]).join("/")} V=${idx.map(i => vc?.values?.[i]).join("/")}`
+                + ` ${info.how[k]} score=${this.responseScores[k]}`;
+        }).join(" · ");
+        return `${C} ‖ ${V} ‖ md: ${md} ‖ ${G} ‖ bloque1 "${b?.name ?? "-"}" (${rowsB.length} preg, filas ${idx.join(",")})`
+            + ` fiable=${info.reliable} aviso=${this.orderVaries} media=${b ? b.mean.toFixed(2) : "-"}: ${pts}`;
+    }
+
+    /** Texto seleccionable arriba del visual, para copiarlo y pegarlo tal cual. */
+    private renderDebug(): void {
+        if (!this.debugEl) {
+            this.debugEl = document.createElement("div");
+            this.debugEl.className = "lk-debug";
+            this.root.appendChild(this.debugEl);
+        }
+        this.debugEl.textContent = "DIAG " + this.debugLine;
+    }
 
     private sortByScaleOrder(groups: any[]): any[] {
         const info = this.orderInfo(groups);
@@ -1223,6 +1268,7 @@ export class Visual implements IVisual {
             if (legendOn) { this.renderLegend(topLegend ? this.topSvg : this.bottomSvg, w, topLegend ? 0 : by, legendFs, legendH); }
         }
         this.renderNote(this.noteMessages(this.hiddenRows), size);
+        if (DEBUG_DATA) { this.renderDebug(); }
         this.svg.setAttribute("aria-label", this.t("UI_AriaChart", "Likert survey chart") + ": "
             + this.qOrder.length + " " + this.t("UI_AriaQuestions", "questions"));
         this.attachTooltips();

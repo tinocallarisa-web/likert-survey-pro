@@ -27,7 +27,10 @@ const PBIVIZ_JSON = path.join(ROOT, "pbiviz.json");
 
 const forceFree = process.argv.includes("--free");
 const events = process.argv.includes("--events");
-const suffix = (forceFree ? "_testfree" : "_test") + (events ? "ev" : "");
+// --debug: DEBUG_DATA = true -> una franja arriba con lo que manda Power BI (columnas, roles, grupos,
+// Scale order y Value del primer bloque y lo que decide orderInfo). guid propio ...DIAG.
+const debug = process.argv.includes("--debug");
+const suffix = (forceFree ? "_testfree" : "_test") + (events ? "ev" : "") + (debug ? "DIAG" : "");
 
 // --events: instrumentacion SOLO en el paquete de prueba. Envuelve el eventService y cuenta.
 const EV_ANCHOR = "        this.events = options.host.eventService;";
@@ -93,6 +96,15 @@ try {
         ts = ts.replace(EV_ANCHOR, EV_CODE).replace(UPD_ANCHOR, UPD_CODE);
         console.log("Instrumentacion de eventos: ON");
     }
+    if (debug) {
+        const DBG_FIND = "const DEBUG_DATA = false;";
+        if (!ts.includes(DBG_FIND)) {
+            console.error("DEBUG_DATA no encontrado en visual.ts. Actualiza ESTE script.");
+            process.exit(1);
+        }
+        ts = ts.replace(DBG_FIND, "const DEBUG_DATA = true; // PATCHED BY build-test.js --debug");
+        console.log("Diagnostico de datos: ON");
+    }
     // Marca de compilación en una esquina: saber QUÉ build está ejecutando Desktop.
     const STAMP_FIND = 'const TEST_STAMP = ""; // TEST_STAMP_MARKER';
     if (!ts.includes(STAMP_FIND)) {
@@ -115,7 +127,7 @@ try {
     const partes = pbivizObj.visual.version.split(".");
     partes[3] = String(Number(partes[3]) + nBuild);
     pbivizObj.visual.version = partes.join(".");
-    pbivizObj.visual.displayName += forceFree ? " (test free)" : " (test)";
+    pbivizObj.visual.displayName += (forceFree ? " (test free)" : " (test)") + (debug ? " DIAG" : "");
     console.log("Version de prueba: " + pbivizObj.visual.version + "  marca: " + stamp);
     fs.writeFileSync(PBIVIZ_JSON, JSON.stringify(pbivizObj, null, 2), "utf8");
 

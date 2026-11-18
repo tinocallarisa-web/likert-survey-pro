@@ -99,3 +99,10 @@
     .lk-g-tpl { border-style: solid; border-radius: 6px; padding: 4px; cursor: pointer; background: #FFFFFF; font: 11px "Segoe UI", sans-serif;
         color: #252423; display: flex; flex-direction: column; align-items: center; gap: 2px; }
 }
+
+// Diagnóstico de datos: solo en la build --debug (DEBUG_DATA). Texto seleccionable para copiarlo.
+.lk-debug {
+    position: absolute; left: 0; right: 0; top: 0; z-index: 40; max-height: 45%; overflow: auto;
+    font: 10px/1.3 Consolas, monospace; padding: 3px 6px; background: rgba(255, 255, 240, 0.96); color: #000;
+    border-bottom: 1px solid #A4262C; white-space: normal; word-break: break-all; user-select: text; cursor: text;
+}
