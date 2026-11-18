@@ -634,7 +634,9 @@ export class Visual implements IVisual {
         const tope = Math.max(60, Math.min(w * (s.labels.questionWidth / 100), w * 0.6));
         const anchoTexto = this.rows.reduce(
             (m, r) => Math.max(m, r.question.length * s.qtable.questionFontSize * 0.58), 0);
-        const qW = Math.max(60, Math.min(tope, anchoTexto + 12));
+        // +20 y no +12: ellipsis() resta 12 + 6 px de margen; con +12 la pregunta más larga
+        // perdía siempre 1-2 letras ("Sales rep servi…") aunque hubiera sitio de sobra.
+        const qW = Math.max(60, Math.min(tope, anchoTexto + 20));
         const leftW = blockW + qW;
         // Ancho reservado a la derecha, MEDIDO sobre los textos reales (mismo calculo que las
         // columnas fijas del render): una estimacion fija se quedaba corta con "100% / 100%".
