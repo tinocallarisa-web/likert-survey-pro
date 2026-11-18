@@ -645,7 +645,9 @@ export class Visual implements IVisual {
         // "Suma" ese valor es código × respuestas de la primera pregunta, y la media cambiaba con el
         // orden de las filas (46,6 en un informe, 178,6 al expandir la jerarquía). Ver orderInfo().
         const info = this.orderInfo(kept);
-        this.responseScores = kept.map((_, i) => info.reliable ? info.ranks[i] as number : i + 1);
+        this.responseScores = info.reliable ? scaleCodes(info.ranks as number[]) : kept.map((_, i) => i + 1);
+        // Scale order en Suma (o múltiplo de un recuento): el orden sale bien, pero se recomienda Mínimo.
+        this.orderSummed = info.summed;
         this.responseColors = this.scaleColors(kept);
         this.responseIds = kept.map(g => this.host.createSelectionIdBuilder()
             .withSeries(cat.values, g).createSelectionId());
@@ -824,7 +826,7 @@ export class Visual implements IVisual {
      *  - si no (p. ej. Scale order = Suma y Value = la misma suma), no es fiable: se ordena por el
      *    mínimo, como en la 1.0, la media usa la posición 1, 2, 3… y una nota lo dice.
      */
-    private orderInfo(groups: any[]): { ranks: (number | null)[]; reliable: boolean; varies: boolean; how: string[] } {
+    private orderInfo(groups: any[]): { ranks: (number | null)[]; reliable: boolean; varies: boolean; summed: boolean; how: string[] } {
         const eq = (a: number[]) => a.every(x => Math.abs(x - a[0]) <= 1e-9 * Math.max(1, Math.abs(a[0])));
         const per = groups.map(g => {
             const vals = (g?.values as any[]) ?? [];
@@ -849,10 +851,15 @@ export class Visual implements IVisual {
         const present = ranks.filter(r => r !== null) as number[];
         const distinct = new Set(present.map(r => r.toPrecision(12))).size === present.length;
         const reliable = present.length === groups.length && per.every(p => p.ok) && distinct;
-        return { ranks, reliable, varies: present.length > 0 && !reliable, how: per.map(p => p.how) };
+        // Suma: lo dice la consulta ("Sum(…)") o el cociente con un recuento. Caso real de Tino (18-11-2026):
+        // Sum of ResponseOrder = código × 50 filas, constante por pregunta: 50, 100… 250.
+        const summed = groups.some(g => /^\s*Sum\s*\(/i.test(String(((g?.values as any[]) ?? [])
+            .find(v => v?.source?.roles?.order)?.source?.queryName ?? ""))) || per.some(p => p.how === "ratio");
+        return { ranks, reliable, varies: present.length > 0 && !reliable, summed, how: per.map(p => p.how) };
     }
 
     private orderVaries = false;
+    private orderSummed = false;
     private debugLine = "";
     private debugEl: HTMLDivElement | null = null;
 
@@ -883,7 +890,9 @@ export class Visual implements IVisual {
                 + ` ${info.how[k]} score=${this.responseScores[k]}`;
         }).join(" · ");
         return `${C} ‖ ${V} ‖ md: ${md} ‖ ${G} ‖ bloque1 "${b?.name ?? "-"}" (${rowsB.length} preg, filas ${idx.join(",")})`
-            + ` fiable=${info.reliable} aviso=${this.orderVaries} media=${b ? b.mean.toFixed(2) : "-"}: ${pts}`;
+            + ` fiable=${info.reliable} aviso=${this.orderVaries} suma=${info.summed} media=${b ? b.mean.toFixed(2) : "-"}`
+            + ` boxes.size guardado=${JSON.stringify(dv.metadata?.objects?.["boxes"]?.["size"] ?? null)} usado=${this.settings.boxes.size}`
+            + ` neutral=${this.settings.scale.neutralMode} negN=${this.negN}: ${pts}`;
     }
 
     /** Texto seleccionable arriba del visual, para copiarlo y pegarlo tal cual. */
@@ -1650,6 +1659,8 @@ export class Visual implements IVisual {
         }
         if (this.orderVaries) {
             msgs.push(this.t("UI_OrderVaries", "Scale order is not one number per scale point: set its aggregation to Minimum. The mean uses positions 1, 2, 3…"));
+        } else if (this.orderSummed) {
+            msgs.push(this.t("UI_OrderSummed", "Scale order is summed: set its aggregation to Minimum so each scale point keeps its own code."));
         }
         if (this.truncatedAt) {
             msgs.push(this.t("UI_Truncated", "Showing the first {0} rows Power BI sent.").replace("{0}", String(this.truncatedAt)));
@@ -2175,6 +2186,28 @@ export class Visual implements IVisual {
 // ── Utilidades ────────────────────────────────────────────────────────────────
 
 interface IValueFormatterLike { format(v: number): string; }
+
+/**
+ * Puntuación de cada punto de escala a partir de Scale order (ya ordenado de menor a mayor), para que la
+ * media salga en la escala del cuestionario:
+ *  - enteros pequeños consecutivos (1…5, 0…10, -2…2): tal cual;
+ *  - equiespaciados con paso s > 1 cuyos v/s son enteros consecutivos (50, 100…250 → 1…5): v/s;
+ *  - cualquier otra cosa: las posiciones 1, 2, 3…
+ */
+function scaleCodes(v: number[]): number[] {
+    const n = v.length;
+    const pos = v.map((_, i) => i + 1);
+    if (n < 2) { return n ? (Number.isInteger(v[0]) && Math.abs(v[0]) <= 10 ? v.slice() : pos) : []; }
+    const near = (a: number, b: number) => Math.abs(a - b) <= 1e-9 * Math.max(1, Math.abs(a), Math.abs(b));
+    const consecutive = (a: number[]) => a.every(x => near(x, Math.round(x))) && a.every((x, i) => i === 0 || near(x - a[i - 1], 1));
+    if (consecutive(v) && Math.abs(v[0]) <= 10 && Math.abs(v[n - 1]) <= 10) { return v.map(x => Math.round(x)); }
+    const s = v[1] - v[0];
+    if (s > 1 && v.every((x, i) => i === 0 || near(x - v[i - 1], s))) {
+        const k = v.map(x => x / s);
+        if (consecutive(k)) { return k.map(x => Math.round(x)); }
+    }
+    return pos;
+}
 
 function boxTxt(r: { topBox: number; bottomBox: number }): string {
     return `${(r.topBox * 100).toFixed(0)}% / ${(r.bottomBox * 100).toFixed(0)}%`;

@@ -176,6 +176,7 @@
   "UI_Hidden1": "1 question ne tient pas : activez le défilement ou réglez la hauteur de ligne sur Automatique.",
   "UI_Hidden": "{0} questions ne tiennent pas : activez le défilement ou réglez la hauteur de ligne sur Automatique.",
   "UI_OrderVaries": "L’ordre de l’échelle n’est pas un nombre par point : réglez son agrégation sur Minimum. La moyenne utilise les positions 1, 2, 3…",
+  "UI_OrderSummed": "L’ordre de l’échelle est additionné : réglez son agrégation sur Minimum pour que chaque point garde son code.",
   "UI_Truncated": "Affichage des {0} premières lignes envoyées par Power BI.",
   "UI_ReadingFree": "Fonctions Pro non appliquées en mode lecture :",
   "UI_PanelsPreview": "Aperçu Pro : les {0} premiers panneaux sur {1}",

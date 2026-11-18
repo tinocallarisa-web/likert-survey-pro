@@ -176,6 +176,7 @@
   "UI_Hidden1": "1 vraag past niet: zet schuiven aan of stel de rijhoogte in op Automatisch.",
   "UI_Hidden": "{0} vragen passen niet: zet schuiven aan of stel de rijhoogte in op Automatisch.",
   "UI_OrderVaries": "De schaalvolgorde is niet één getal per schaalpunt: zet de aggregatie op Minimum. Het gemiddelde gebruikt de posities 1, 2, 3…",
+  "UI_OrderSummed": "De schaalvolgorde wordt opgeteld: zet de aggregatie op Minimum zodat elk schaalpunt zijn eigen code houdt.",
   "UI_Truncated": "De eerste {0} rijen die Power BI stuurde, worden getoond.",
   "UI_ReadingFree": "Pro-functies niet toegepast in leesweergave:",
   "UI_PanelsPreview": "Pro-voorbeeld: de eerste {0} van {1} panelen",

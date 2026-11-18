@@ -176,6 +176,7 @@
   "UI_Hidden1": "1 domanda non entra: attiva lo scorrimento o imposta l’altezza riga su Automatico.",
   "UI_Hidden": "{0} domande non entrano: attiva lo scorrimento o imposta l’altezza riga su Automatico.",
   "UI_OrderVaries": "L’ordine della scala non è un numero per punto: imposta l’aggregazione su Minimo. La media usa le posizioni 1, 2, 3…",
+  "UI_OrderSummed": "L’ordine della scala viene sommato: imposta l’aggregazione su Minimo perché ogni punto mantenga il suo codice.",
   "UI_Truncated": "Vengono mostrate le prime {0} righe inviate da Power BI.",
   "UI_ReadingFree": "Funzioni Pro non applicate in visualizzazione lettura:",
   "UI_PanelsPreview": "Anteprima Pro: i primi {0} di {1} pannelli",

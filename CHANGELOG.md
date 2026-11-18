@@ -63,7 +63,10 @@ Versioning follows `MAJOR.MINOR.PATCH.BUILD` in `pbiviz.json` and semver in `pac
   one question, so the block mean (e.g. 46.6 on a 1–5 scale) changed with the order of the rows.
   Scale order now counts only when it is one number per scale point (Minimum, Average…, or Sum
   divided by a count in Value); otherwise the mean uses positions 1, 2, 3… and a note under the
-  chart asks for the Minimum aggregation. The order of the scale is still taken from the minimum,
+  chart asks for the Minimum aggregation. The score of each point is read as a scale code: small
+  consecutive integers (1…5, 0…10) as they are, evenly spaced values whose ratio to the step are
+  consecutive integers (Sum of a code over 50 rows: 50, 100…250) divided by the step, anything else as
+  positions 1, 2, 3…. When Scale order is a Sum, a note recommends the Minimum aggregation. The order of the scale is still taken from the minimum,
   as before, so Top/Bottom box and NPS do not change.
 - **Leave out of the bar** did not remove the neutral point in 1.0.0.1. It now does, on scales
   with a middle point.

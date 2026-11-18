@@ -241,6 +241,17 @@ LK = {
     "尺度の順序が尺度の点ごとに 1 つの数値になっていません。集計を「最小」にしてください。平均は位置 1、2、3… を使います。",
     "量表顺序不是每个量表点一个数字：请将其聚合设为“最小值”。平均值使用位置 1、2、3…",
     "척도 순서가 척도 점마다 하나의 숫자가 아닙니다. 집계를 최소값으로 설정하세요. 평균은 위치 1, 2, 3…을 사용합니다."],
+"Scale order is summed: set its aggregation to Minimum so each scale point keeps its own code.": [
+    "El orden de la escala se está sumando: pon su agregación en Mínimo para que cada punto conserve su código.",
+    "A ordem da escala está sendo somada: defina a agregação como Mínimo para que cada ponto mantenha o seu código.",
+    "L’ordre de l’échelle est additionné : réglez son agrégation sur Minimum pour que chaque point garde son code.",
+    "Die Skalenreihenfolge wird summiert: Aggregation auf Minimum stellen, damit jeder Skalenpunkt seinen Code behält.",
+    "L’ordine della scala viene sommato: imposta l’aggregazione su Minimo perché ogni punto mantenga il suo codice.",
+    "De schaalvolgorde wordt opgeteld: zet de aggregatie op Minimum zodat elk schaalpunt zijn eigen code houdt.",
+    "Kolejność skali jest sumowana: ustaw agregację na Minimum, aby każdy punkt skali zachował swój kod.",
+    "尺度の順序が合計されています。各点が自分のコードを保つよう、集計を「最小」にしてください。",
+    "量表顺序正在求和：请将其聚合设为“最小值”，使每个量表点保留自己的代码。",
+    "척도 순서가 합산되고 있습니다. 각 점이 자기 코드를 유지하도록 집계를 최소값으로 설정하세요."],
 # pantalla de inicio
 "Diverging stacked bars centred on the neutral answer: see at a glance where agreement wins.": [
     "Barras apiladas divergentes centradas en la respuesta neutra: ve de un vistazo dónde gana el acuerdo.",

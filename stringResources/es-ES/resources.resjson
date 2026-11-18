@@ -176,6 +176,7 @@
   "UI_Hidden1": "1 pregunta no cabe: activa el desplazamiento o pon el alto de fila en Automático.",
   "UI_Hidden": "{0} preguntas no caben: activa el desplazamiento o pon el alto de fila en Automático.",
   "UI_OrderVaries": "El orden de la escala no es un número por punto de la escala: pon su agregación en Mínimo. La media usa las posiciones 1, 2, 3…",
+  "UI_OrderSummed": "El orden de la escala se está sumando: pon su agregación en Mínimo para que cada punto conserve su código.",
   "UI_Truncated": "Se muestran las primeras {0} filas que envió Power BI.",
   "UI_ReadingFree": "Funciones Pro no aplicadas en la vista de lectura:",
   "UI_PanelsPreview": "Vista previa Pro: los primeros {0} de {1} paneles",

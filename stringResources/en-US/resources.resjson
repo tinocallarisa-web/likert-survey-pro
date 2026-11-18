@@ -176,6 +176,7 @@
   "UI_Hidden1": "1 question does not fit: turn on scrolling or set Row height to Automatic.",
   "UI_Hidden": "{0} questions do not fit: turn on scrolling or set Row height to Automatic.",
   "UI_OrderVaries": "Scale order is not one number per scale point: set its aggregation to Minimum. The mean uses positions 1, 2, 3…",
+  "UI_OrderSummed": "Scale order is summed: set its aggregation to Minimum so each scale point keeps its own code.",
   "UI_Truncated": "Showing the first {0} rows Power BI sent.",
   "UI_ReadingFree": "Pro features not applied in reading view:",
   "UI_PanelsPreview": "Pro preview: the first {0} of {1} panels",

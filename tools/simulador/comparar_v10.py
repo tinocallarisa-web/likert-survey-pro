@@ -37,6 +37,14 @@ window.__dv2 = function(spec){
       const v = { source: { displayName: 'Sum of Response', queryName: 'Sum(Survey.Response)', roles: { value: true, order: true }, groupName: name, isMeasure: true },
                   values: rows.map(r => r.counts[k] * code) };
       values.push(v); g = { name, values: [v] };
+    } else if (spec.tino) {
+      // Forma exacta del informe de Tino (DIAG de Desktop, 1.1.0.14): Sum of Responses y Sum of ResponseOrder,
+      // ResponseOrder = código × 50 (sumado sobre 50 filas), constante en todas las preguntas.
+      const v = { source: { displayName: 'Sum of Responses', queryName: 'Sum(encuesta_clima_estados.Responses)', roles: { value: true }, groupName: name, isMeasure: true },
+                  values: rows.map(r => r.counts[k] * 37) };
+      const o = { source: { displayName: 'Sum of ResponseOrder', queryName: 'Sum(encuesta_clima_estados.ResponseOrder)', roles: { order: true }, groupName: name, isMeasure: true },
+                  values: rows.map(() => code * 50) };
+      values.push(v, o); g = { name, values: [v, o] };
     } else {
       const v = { source: { displayName: 'Count', queryName: 'Count(Survey.Id)', roles: { value: true }, groupName: name, isMeasure: true }, values: rows.map(r => r.counts[k]) };
       const o = { source: { displayName: 'Order', queryName: 'Min(Survey.Response)', roles: { order: true }, groupName: name, isMeasure: true }, values: rows.map(() => code) };
@@ -44,6 +52,8 @@ window.__dv2 = function(spec){
     }
     groups.push(g);
   });
+  // Desktop manda los grupos en orden alfabético de la respuesta (Agree, Disagree, Neutral…)
+  if (spec.alpha) groups.sort((a, b) => a.name < b.name ? -1 : 1);
   values.grouped = () => groups;
   return { metadata: { columns: cats.map(c => c.source).concat(values.map(v => v.source)), objects: spec.objects }, categorical: { categories: cats, values } };
 };
@@ -91,6 +101,8 @@ async def main():
         "Group + Question, Value=Order=Sum of Response": dict(groupWell=True, same=True),
         "Jerarquía expandida, Value=Order=Sum of Response": dict(hier=True, same=True),
         "Jerarquía expandida, Value=Count, Order=Min(code)": dict(hier=True, same=False),
+        "Tino: jerarquía, grupos alfabéticos, Sum of Responses + Sum of ResponseOrder (×50)": dict(hier=True, tino=True, alpha=True),
+        "Tino con Block en Group": dict(groupWell=True, tino=True, alpha=True),
     }
     fallos = 0
     async with async_playwright() as p:
@@ -103,7 +115,7 @@ async def main():
             old, e0 = await run(b, JS10, GUID10, spec10, 1)
             # Con Scale order = Suma, la 1.0 daba una "media" que dependía del orden de filas: la 1.1 usa la
             # posición 1..5 y avisa. Ahí se exige: mismas cajas y NPS que la 1.0, medias entre 1 y 5 y el aviso.
-            if c.get("same"):
+            if c.get("same") or c.get("tino"):
                 ok = (new["boxes"] == old["boxes"] and new["nps"] == old["nps"] and new["aviso"]
                       and all(1 <= float(x) <= 5 for x in new["scores"]))
             else:
