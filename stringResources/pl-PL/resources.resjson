@@ -175,6 +175,7 @@
   "UI_ValueAxisTitle": "% odpowiedzi (lewo: negatywne · prawo: pozytywne)",
   "UI_Hidden1": "1 pytanie się nie mieści: włącz przewijanie lub ustaw wysokość wiersza na Automatycznie.",
   "UI_Hidden": "{0} pytań się nie mieści: włącz przewijanie lub ustaw wysokość wiersza na Automatycznie.",
+  "UI_OrderVaries": "Kolejność skali nie jest jedną liczbą na punkt skali: ustaw agregację na Minimum. Średnia używa pozycji 1, 2, 3…",
   "UI_Truncated": "Pokazano pierwsze {0} wierszy wysłanych przez Power BI.",
   "UI_ReadingFree": "Funkcje Pro niezastosowane w widoku do odczytu:",
   "UI_PanelsPreview": "Podgląd Pro: pierwsze {0} z {1} paneli",

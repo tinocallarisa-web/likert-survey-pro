@@ -117,7 +117,8 @@
     <p>Fill in the <em>Scale order</em> well with a numeric rank, or sort the response column
        in the model. If the well is filled and the order is still wrong, check its
        aggregation: with one row per respondent, <code>Sum</code> inflates the rank by the
-       number of rows. Set it to <strong>Minimum</strong>.</p>
+       number of rows. Set it to <strong>Minimum</strong>. When Scale order is not one number per scale
+       point, a note under the chart says so and the mean score uses the positions 1, 2, 3… instead.</p>
   </details>
 
   <details>
@@ -154,7 +155,8 @@
   <details>
     <summary>What is the figure in the circle next to each block?</summary>
     <p>The block's summary, chosen in <em>Question table → Block score</em>: mean score on the
-       scale, share of positive answers, or NPS. It is weighted by responses, not by questions,
+       scale (the average of the Scale order numbers — 1 to 5 on a five-point scale — weighted by the
+       answers in Value), share of positive answers, or NPS. It is weighted by responses, not by questions,
        so a question answered by 95 people does not count the same as one answered by 250.</p>
   </details>
 

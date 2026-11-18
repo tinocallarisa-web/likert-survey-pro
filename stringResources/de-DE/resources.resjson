@@ -175,6 +175,7 @@
   "UI_ValueAxisTitle": "% der Antworten (links: negativ · rechts: positiv)",
   "UI_Hidden1": "1 Frage passt nicht: Scrollen aktivieren oder die Zeilenhöhe auf Automatisch stellen.",
   "UI_Hidden": "{0} Fragen passen nicht: Scrollen aktivieren oder die Zeilenhöhe auf Automatisch stellen.",
+  "UI_OrderVaries": "Die Skalenreihenfolge ist nicht eine Zahl pro Skalenpunkt: Aggregation auf Minimum stellen. Der Mittelwert nutzt die Positionen 1, 2, 3…",
   "UI_Truncated": "Es werden die ersten {0} Zeilen angezeigt, die Power BI gesendet hat.",
   "UI_ReadingFree": "In der Leseansicht nicht angewendete Pro-Funktionen:",
   "UI_PanelsPreview": "Pro-Vorschau: die ersten {0} von {1} Feldern",

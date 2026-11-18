@@ -638,18 +638,12 @@ export class Visual implements IVisual {
         // Orden de la escala: el de los grupos, que sigue la ordenación del modelo.
         const kept = groups.slice(0, FREE_MAX_RESPONSES);
         this.responseLabels = kept.map(g => this.name(g.name));
-        // La puntuacion sale del pozo Scale order si esta relleno; si no, de la posicion.
-        // Sin eso, una media sobre una escala sin numeros no significaria nada.
-        this.responseScores = kept.map((g, i) => {
-            const col = (g.values as any[]).find(v => v?.source?.roles?.order);
-            if (col) {
-                for (let k = 0; k < (col.values?.length ?? 0); k++) {
-                    const v = col.values[k];
-                    if (v !== null && v !== undefined && isFinite(Number(v))) { return Number(v); }
-                }
-            }
-            return i + 1;
-        });
+        // La puntuacion sale del pozo Scale order cuando es UN número por punto de escala; si no, de
+        // la posicion (1, 2, 3…). En la 1.0 se tomaba el valor de la primera fila: con Scale order en
+        // "Suma" ese valor es código × respuestas de la primera pregunta, y la media cambiaba con el
+        // orden de las filas (46,6 en un informe, 178,6 al expandir la jerarquía). Ver orderInfo().
+        const info = this.orderInfo(kept);
+        this.responseScores = kept.map((_, i) => info.reliable ? info.ranks[i] as number : i + 1);
         this.responseColors = this.scaleColors(kept);
         this.responseIds = kept.map(g => this.host.createSelectionIdBuilder()
             .withSeries(cat.values, g).createSelectionId());
@@ -820,23 +814,47 @@ export class Visual implements IVisual {
      * y el gráfico queda sin sentido SIN avisar. Con el pozo "Scale order" el orden es
      * explícito y vive en el propio visual. Sin ese pozo se respeta el orden que llega.
      */
-    private sortByScaleOrder(groups: any[]): any[] {
-        const rank = (g: any): number | null => {
-            const col = (g?.values as any[])?.find(v => v?.source?.roles?.order);
-            if (!col) { return null; }
-            // El MINIMO, no el primer valor: si el usuario deja la agregacion en Suma y hay
-            // varias filas por celda, cualquier estadistico se infla, pero el minimo es el
-            // menos sensible y con Minimo/Media/Primero da el valor exacto.
-            let min: number | null = null;
-            for (let i = 0; i < (col.values?.length ?? 0); i++) {
-                const v = col.values[i];
-                if (v === null || v === undefined || !isFinite(Number(v))) { continue; }
-                const n = Number(v);
-                if (min === null || n < min) { min = n; }
+    /**
+     * Scale order leído como UN número por punto de escala, sin depender del orden de las filas:
+     *  - si vale lo mismo en todas las filas (agregación Mínimo, Media, Primero…), ese número;
+     *  - si no, pero Scale order / Value es constante (Suma del código con Value = recuento), el código;
+     *  - si no (p. ej. Scale order = Suma y Value = la misma suma), no es fiable: se ordena por el
+     *    mínimo, como en la 1.0, la media usa la posición 1, 2, 3… y una nota lo dice.
+     */
+    private orderInfo(groups: any[]): { ranks: (number | null)[]; reliable: boolean; varies: boolean } {
+        const eq = (a: number[]) => a.every(x => Math.abs(x - a[0]) <= 1e-9 * Math.max(1, Math.abs(a[0])));
+        const per = groups.map(g => {
+            const vals = (g?.values as any[]) ?? [];
+            const oc = vals.find(v => v?.source?.roles?.order);
+            if (!oc) { return { r: null as number | null, ok: false, min: null as number | null }; }
+            const vc = vals.find(v => v?.source?.roles?.value);
+            const os: number[] = [], rs: number[] = [];
+            for (let i = 0; i < (oc.values?.length ?? 0); i++) {
+                const o = this.num(oc.values[i]);
+                if (o === null) { continue; }
+                os.push(o);
+                const v = vc && vc !== oc ? this.num(vc.values?.[i]) : null;
+                if (v !== null && v > 0) { rs.push(o / v); }
             }
-            return min;
-        };
-        const ranks = groups.map(rank);
+            if (!os.length) { return { r: null, ok: false, min: null }; }
+            const min = Math.min(...os);
+            if (eq(os)) { return { r: os[0], ok: true, min }; }
+            if (rs.length && eq(rs) && (vc?.source?.queryName !== oc.source?.queryName)) { return { r: rs[0], ok: true, min }; }
+            return { r: min, ok: false, min };
+        });
+        const ranks = per.map(p => p.r);
+        const present = ranks.filter(r => r !== null) as number[];
+        const distinct = new Set(present.map(r => r.toPrecision(12))).size === present.length;
+        const reliable = present.length === groups.length && per.every(p => p.ok) && distinct;
+        return { ranks, reliable, varies: present.length > 0 && !reliable };
+    }
+
+    private orderVaries = false;
+
+    private sortByScaleOrder(groups: any[]): any[] {
+        const info = this.orderInfo(groups);
+        this.orderVaries = info.varies;
+        const ranks = info.ranks;
         if (ranks.every(r => r === null)) { return groups; }
         // Los que no traen rango se quedan al final, en su orden original.
         return groups
@@ -1583,6 +1601,9 @@ export class Visual implements IVisual {
         if (hidden > 0) {
             msgs.push((hidden === 1 ? this.t("UI_Hidden1", "1 question does not fit: turn on scrolling or set Row height to Automatic.")
                 : this.t("UI_Hidden", "{0} questions do not fit: turn on scrolling or set Row height to Automatic.")).replace("{0}", String(hidden)));
+        }
+        if (this.orderVaries) {
+            msgs.push(this.t("UI_OrderVaries", "Scale order is not one number per scale point: set its aggregation to Minimum. The mean uses positions 1, 2, 3…"));
         }
         if (this.truncatedAt) {
             msgs.push(this.t("UI_Truncated", "Showing the first {0} rows Power BI sent.").replace("{0}", String(this.truncatedAt)));

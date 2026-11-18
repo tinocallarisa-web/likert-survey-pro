@@ -230,6 +230,17 @@ LK = {
     "回答の % (左: 否定 · 右: 肯定)",
     "回答占比 %（左：负面 · 右：正面）",
     "응답 %(왼쪽: 부정 · 오른쪽: 긍정)"],
+"Scale order is not one number per scale point: set its aggregation to Minimum. The mean uses positions 1, 2, 3…": [
+    "El orden de la escala no es un número por punto de la escala: pon su agregación en Mínimo. La media usa las posiciones 1, 2, 3…",
+    "A ordem da escala não é um número por ponto da escala: defina a agregação como Mínimo. A média usa as posições 1, 2, 3…",
+    "L’ordre de l’échelle n’est pas un nombre par point : réglez son agrégation sur Minimum. La moyenne utilise les positions 1, 2, 3…",
+    "Die Skalenreihenfolge ist nicht eine Zahl pro Skalenpunkt: Aggregation auf Minimum stellen. Der Mittelwert nutzt die Positionen 1, 2, 3…",
+    "L’ordine della scala non è un numero per punto: imposta l’aggregazione su Minimo. La media usa le posizioni 1, 2, 3…",
+    "De schaalvolgorde is niet één getal per schaalpunt: zet de aggregatie op Minimum. Het gemiddelde gebruikt de posities 1, 2, 3…",
+    "Kolejność skali nie jest jedną liczbą na punkt skali: ustaw agregację na Minimum. Średnia używa pozycji 1, 2, 3…",
+    "尺度の順序が尺度の点ごとに 1 つの数値になっていません。集計を「最小」にしてください。平均は位置 1、2、3… を使います。",
+    "量表顺序不是每个量表点一个数字：请将其聚合设为“最小值”。平均值使用位置 1、2、3…",
+    "척도 순서가 척도 점마다 하나의 숫자가 아닙니다. 집계를 최소값으로 설정하세요. 평균은 위치 1, 2, 3…을 사용합니다."],
 # pantalla de inicio
 "Diverging stacked bars centred on the neutral answer: see at a glance where agreement wins.": [
     "Barras apiladas divergentes centradas en la respuesta neutra: ve de un vistazo dónde gana el acuerdo.",

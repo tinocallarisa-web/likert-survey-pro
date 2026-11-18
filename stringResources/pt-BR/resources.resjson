@@ -175,6 +175,7 @@
   "UI_ValueAxisTitle": "% de respostas (esquerda: negativas · direita: positivas)",
   "UI_Hidden1": "1 pergunta não cabe: ative a rolagem ou defina a altura da linha como Automático.",
   "UI_Hidden": "{0} perguntas não cabem: ative a rolagem ou defina a altura da linha como Automático.",
+  "UI_OrderVaries": "A ordem da escala não é um número por ponto da escala: defina a agregação como Mínimo. A média usa as posições 1, 2, 3…",
   "UI_Truncated": "Mostrando as primeiras {0} linhas enviadas pelo Power BI.",
   "UI_ReadingFree": "Recursos Pro não aplicados no modo de leitura:",
   "UI_PanelsPreview": "Prévia Pro: os primeiros {0} de {1} painéis",
