@@ -16,10 +16,50 @@
 </head>
 <body>
   <h1>Changelog — Likert Survey Pro</h1>
-  <p><strong>Current version:</strong> 1.0.0.1 · <a href="mailto:support@tcviz.com">support@tcviz.com</a></p>
+  <p><strong>Current version:</strong> 1.1.0.0 · <a href="mailto:support@tcviz.com">support@tcviz.com</a></p>
   <nav><a href="support.html">Support</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
 <p>All notable changes to this visual are documented here.</p>
 <p>Versioning follows <code>MAJOR.MINOR.PATCH.BUILD</code> in <code>pbiviz.json</code> and semver in <code>package.json</code>.</p>
+<h2>[1.1.0.0] — 2026-11-18 — test build, not yet submitted</h2>
+<h3>Added — free</h3>
+<ul>
+<li><strong>Row height: Automatic or Fixed</strong> (Layout card). Automatic is the default: the rows share the height of the visual and the bars grow up to 64 px, so ten questions in a tall visual fill it instead of leaving the bottom half empty. Fixed gives every row the height you type; when they do not fit, the chart scrolls, or a note says how many questions are not shown. Block bands, question text, labels and the right-hand columns follow the row.</li>
+<li><strong>Drilldown</strong> on the Question field: a hierarchy or several fields, with the drill buttons of the visual header. <em>Expand all down</em> labels each bar <em>Parent · Child</em>.</li>
+<li><strong>Value axis</strong> (percent marks either side of the centre and a title), <strong>category axis title</strong> over the question column, and <strong>gridlines</strong> every 10, 20, 25 or 50 %, all configurable.</li>
+<li><strong>Accessibility card</strong>: high contrast Automatic or On, focus colour and width, minimum text size, and patterns on the scale points (direction = side, density = distance from neutral, dots = neutral). In high contrast the bars use the system colours with those patterns. The focused segment now has a visible outline.</li>
+<li><strong>On-object formatting</strong>: bars, questions, legend, axes, gridlines, panel titles and background.</li>
+<li><strong>Report theme</strong> style (default): text and block colours follow the report theme.</li>
+<li><strong>Setup guide</strong> in three steps while editing (fields, try features on your data, pick a style), and a new start screen with links to the guide, product page and video.</li>
+<li><strong>Layouts by size</strong> (large, medium, small): compact legend, narrow block column and right-hand columns removed before the bars shrink.</li>
+<li><strong>Dynamic format strings</strong>: values and tooltips use the format of each value.</li>
+<li><strong>Fetch More Data</strong>: in the Power BI service the visual requests rows in blocks of 1,000 (up to 21,000). When rows are left out, a note and the warning icon say how many were used.</li>
+<li><strong>Bookmarks and selection</strong>: a bookmark's selection is painted back on the chart; a selected segment is highlighted and the rest dimmed. Clicking a question selects the whole row and clicking a legend item selects that answer across questions. A selection carries every row it adds up. Up and down arrows move between questions.</li>
+<li><strong>12 languages</strong> for the format pane, field wells and the visual's own texts.</li>
+<li>Legend text size and colour; background colour.</li>
+</ul>
+<h3>Added — Pro</h3>
+<ul>
+<li><strong>Small multiples</strong>: one Likert chart per value of the new <em>Small multiples</em> field, sharing the questions and their order. Without a licence, while editing, the first 4 panels show under the watermark.</li>
+<li><strong>The six collection styles</strong>: Boardroom, Ledger, Editorial, Signal, Aurora and Terrace, the same as KPI Card, Pareto, Treemap and the rest of TCViz.</li>
+</ul>
+<h3>Changed</h3>
+<ul>
+<li>The Pro preview watermark is the one shared by every TCViz visual.</li>
+<li>Text colours you have not set follow the report theme instead of a fixed dark grey; the diverging scale keeps its colours. Reports that set colours by hand look the same.</li>
+<li>The licence check also accepts a private <code>partner</code> plan.</li>
+<li><code>allowInteractions</code> is read from <code>hostCapabilities</code>, so turning interactions off in the host stops clicks from filtering.</li>
+<li>Without the Small multiples feature, panels are added together into one chart (the correct total) rather than repeating each question.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li><strong>Leave out of the bar</strong> did not remove the neutral point in 1.0.0.1. It now does, on scales with a middle point.</li>
+<li>Long question labels lost their last letters (column width +20 px, committed separately).</li>
+</ul>
+<h3>Certification</h3>
+<ul>
+<li>API 5.11.1. Unused <code>d3</code> and <code>tooltiputils</code> removed. <code>npm audit</code>: 0 vulnerabilities. ESLint clean.</li>
+<li>Still <code>privileges: []</code>; no <code>fetch</code>, <code>XMLHttpRequest</code>, <code>innerHTML</code> or storage.</li>
+</ul>
 <h2>[1.0.0.1] — 2026-10-02</h2>
 <p>First published version. Resubmission of 1.0.0.0 after certification review.</p>
 <h3>Fixed</h3>

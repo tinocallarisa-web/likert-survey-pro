@@ -30,43 +30,50 @@ Likert charts for Power BI: diverging stacked bars centred on the neutral respon
 ```
 Survey results read wrong on a normal stacked bar. Every bar starts at zero, so agreement and disagreement pile up in the same direction and you cannot see at a glance which questions lean negative.
 
-Likert Survey Pro centres every bar on the neutral response. Disagreement grows to the left of a shared axis, agreement to the right, and the comparison between ten questions becomes something you read in a second instead of decoding.
+Likert Survey Pro centres every bar on the neutral response. Disagreement grows to the left of a shared axis, agreement to the right, and comparing ten questions becomes something you read in a second.
 
 Built for employee engagement, customer satisfaction, patient experience, course evaluation, 360 feedback and any questionnaire answered on a scale.
 
 THE SCALE, HANDLED PROPERLY
 
 • Diverging stacked bars centred on the neutral point, with the number of negative points under your control
-• Three ways to treat the neutral response: split it across the centre, count it as positive, or leave it out of the bar entirely — and the percentages recalculate
-• Percentages or absolute values, so short and long questions stay comparable
-• A Scale order field well fixes the order of the scale inside the visual, without touching the model
-• Diverging colour ramp, plus conditional formatting on the scale colour
-• Data labels with a threshold that hides the ones too small to read
+• Three ways to treat the neutral response: split it across the centre, count it as positive, or leave it out of the bar — and the percentages recalculate
+• Percentages or values, with dynamic format strings from your measure
+• A Scale order field well fixes the order of the scale inside the visual
+• Diverging colour ramp, plus conditional formatting (fx) on the scale colour
+• Data labels with a threshold for small segments
+• Row height Automatic (rows fill the visual) or Fixed, with scrolling or a note when rows do not fit
 
 NATIVE INTEGRATION
 
-• Click a segment to cross-filter the report; Ctrl + click to add; click outside to clear
-• Filters from other visuals are reflected in the bars
-• Tooltips with the question, the response, the value and the share, plus extra measures in their model format
-• Report page tooltips
+• Drilldown: put a hierarchy in Question
+• Value axis, axis titles and gridlines
+• Click a segment, a question or a legend item to cross-filter; Ctrl + click to add; bookmarks keep the selection
+• Tooltips with the question, the response, the value and the share, plus report page tooltips
+• On-object formatting: click the bars, questions, legend, axes or background to format them
+• Report theme by default; layouts that adapt to small tiles
+• A setup guide while you edit
+• 12 languages: English, Spanish, Portuguese, French, German, Italian, Dutch, Polish, Japanese, Chinese and Korean
 
-ACCESSIBLE
+ACCESSIBILITY
 
-• Keyboard navigation: Tab to the chart, arrow keys between segments, Enter to select, Escape to clear, Shift + F10 for the context menu
-• Screen reader labels on every segment
-• High contrast mode: the scale is redrawn in the system colours so the bars stay legible
+• Keyboard navigation: Tab to the chart, arrows between segments and questions, Enter to select, Escape to clear, Shift + F10 for the context menu
+• Screen reader labels on every segment, and a visible focus outline
+• Accessibility card: high contrast (automatic or on), focus colour and width, minimum text size
+• Patterns on the scale points, so negative, neutral and positive read without colour
 
 PRO
 
 • Top box and bottom box: the share at each end of the scale, beside the bar
-• NPS, shown as a pill with its own colours and size
+• NPS, shown as a pill with its own colours
 • A benchmark line across every question, to compare against a target or a previous wave
-• Question groups: blocks drawn as labelled sections, with each block's mean in a circle
-• Per-block colours
+• Question groups: blocks drawn as labelled sections, with each block's score in a circle
+• Small multiples: one Likert chart per region, year or team, with the same questions
+• Six collection styles shared with the rest of TCViz: Boardroom, Ledger, Editorial, Signal, Aurora, Terrace
 
 FREE AND PRO
 
-The free tier gives a correct result, not a cut-down one: no question, no scale point and no respondent is hidden, and nothing is watermarked in a published report. What Pro adds are the analyst readings on top. While you edit a report without a licence, Pro features render working under a "Pro preview" watermark, so you can see exactly what you would get. Reading view shows the free result.
+The free tier gives a correct result, not a cut-down one: no question, no scale point and no respondent is hidden, and nothing is watermarked in a published report. What Pro adds are the analyst readings on top. While you edit a report without a licence, Pro features render working under a "Pro preview" watermark (small multiples: the first 4 panels), so you can see exactly what you would get. Reading view shows the free result.
 
 Pro comes with a one-month free trial, and can be bought monthly or annually.
 
@@ -77,15 +84,21 @@ The visual makes no network requests of any kind: no analytics, no telemetry, no
 GETTING STARTED
 
 1. Add Question, Response and Value.
-2. Add Scale order — a numeric rank per scale point, 1 = leftmost. Without it Power BI hands the responses over alphabetically and a diverging chart built on that means nothing.
-3. Pro: add Group to draw the questions as blocks.
+2. Add Scale order — a numeric rank per scale point, 1 = leftmost. Without it Power BI hands the responses over alphabetically.
+3. Pro: add Group for blocks, or Small multiples for one panel per value.
 
-Documentation, video and sample data: https://tinocallarisa-web.github.io/likert-survey-pro/support.html
+Documentation and video: https://tinocallarisa-web.github.io/likert-survey-pro/support.html
 Support: support@tcviz.com
 
-WHAT'S NEW IN 1.0.0.1
+WHAT'S NEW IN 1.1
 
-First release.
+• Row height: rows now fill a tall visual (Automatic), or take a fixed height
+• Drilldown, value axis, axis titles and gridlines
+• Accessibility card with patterns, focus and minimum text size
+• On-object formatting, setup guide, Report theme and layouts by size
+• Dynamic format strings, bookmarks that keep the selection, 12 languages
+• Pro: small multiples and the six collection styles
+• Fixed: "Leave out of the bar" now removes the neutral point
 ```
 
 ---
@@ -128,7 +141,7 @@ only in Partner Center.
 |---|---|
 | Plan ID | `likert-survey-pro-tcviz` — Service ID `tino_callarisa.likert-survey-pro.likert-survey-pro-tcviz`, matched by `SP_IDENTIFIER` in `src/settings.ts` via `matchesPlan()` |
 | Plan name | Likert Survey Pro |
-| Plan description | Unlocks top and bottom box, NPS, the benchmark line, question groups with per-block means and per-block colours. |
+| Plan description | Unlocks top and bottom box, NPS, the benchmark line, question groups with per-block means and per-block colours, small multiples and the six collection styles. **1.1: update this field in Partner Center** (the plan description is edited there, not in the package). |
 
 ---
 

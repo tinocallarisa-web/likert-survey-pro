@@ -1,27 +1,50 @@
-# Certification Notes — Likert Survey Pro v1.0.0.1
+# Certification Notes — Likert Survey Pro v1.1.0.0
 
 **Visual GUID:** `likertSurveyProTCViz976FC0D15EE24876A338A1A985F3B2BC`
 **Plan ID:** `likert-survey-pro-tcviz` (Service ID `tino_callarisa.likert-survey-pro.likert-survey-pro-tcviz`)
 **Publisher:** TCViz (support@tcviz.com)
-**Version:** 1.0.0.1 — resubmission of 1.0.0.0
+**Version:** 1.1.0.0 — feature release (published version: 1.0.0.1)
+**Plans accepted:** `likert-survey-pro-tcviz` and the private plan `partner` (matched with `matchesPlan()`, Active or Warning)
 
-## Resubmission — 1200.1.2 Code Quality, fixed
+## What is new in 1.1.0.0
 
-The review found `update()` calls emitting `renderingStarted` / `renderingFinished` more than
-once. Cause: when the licence resolved after the first render, the visual repainted by calling
-`update()` again, emitting a second pair for the same host update. Now `update()` delegates to
-`run(options, emit = true)`; the licence repaint calls `run(options, false)`, which renders
-without emitting. Every host `update()` emits exactly one `renderingStarted` followed by exactly
-one `renderingFinished` or `renderingFailed`, on every exit path. Verified in Power BI Desktop
-with a test build that counts the events on screen (`node build-test.js --free --events`).
+Rendering events stay 1:1 (the fix of the 1.0.0.1 resubmission is kept): every host
+`update()` emits one `renderingStarted` and one `renderingFinished`/`renderingFailed`. The
+repaint after the licence resolves, the setup guide's step buttons and the `fetchMoreData`
+request path never call `update()`; when the visual asks for the next segment it closes the
+current pair and returns. Verified in the simulator and with `node build-test.js --free --events`.
+
+- **Row height**: Automatic (rows share the height, bars up to 64 px) or Fixed; scroll or a
+  visible note when rows do not fit, never a silent cut.
+- **Drilldown** on `question` (`drilldown.roles: ["question"]`, no `max` on the role).
+- **Small multiples** (Pro) on the new `panel` role.
+- **Value axis, axis titles and gridlines.**
+- **Accessibility** card (`objects.accessibility`): high contrast auto/on, focus colour and
+  width, minimum text size, patterns on the scale points.
+- **On-object formatting**: `supportsOnObjectFormatting`, `enablePointerEventsFormatMode`,
+  `visualOnObjectFormatting` with sub-selection styles and shortcuts. In format mode a click
+  never selects data.
+- **Bookmarks**: `registerOnSelectCallback` only repaints the restored selection; it never
+  calls `persistProperties`.
+- **Dynamic format strings**: `general.formatString` declared; read per value from
+  `values[i].objects[r].general.formatString`, falling back to the column format.
+- **Fetch More Data**: categorical `window` of 1,000 rows, `fetchMoreData(true)` up to 20 more
+  segments in the service; a note and `displayWarningIcon` when rows are left out.
+- **Setup guide** (edit mode only, `persistProperties` only on button clicks), start screen
+  with links opened by `host.launchUrl` on click, Report theme and six collection styles (Pro).
+- **12 languages**: every role, card, property and enumeration item has a `displayNameKey`;
+  the visual's own texts travel in the bundle (`src/strings.ts`).
+- `allowInteractions` read from `host.hostCapabilities`.
+- Fixed: *Leave out of the bar* did not remove the neutral point in 1.0.0.1.
+
 **Submission date:** (fill on submission)
 
 ---
-
 ## Please read first — Pro preview
 
 Without a licence, **in edit mode only**, Pro options render *working* under a "Pro preview"
-watermark, with a banner naming the feature. This is intentional, not missing gating.
+watermark, with a banner naming the feature. Small multiples show the first 4 panels and a
+note with the total. This is intentional, not missing gating.
 
 In reading view, before the licence has resolved, and wherever licences cannot be read
 (Publish to Web, embedding, export), the **free** result is drawn with no watermark and no
@@ -56,14 +79,18 @@ The `certification` branch contains the exact source used to build the submitted
 
 ## Capabilities Flags
 
-All five required flags are present in `capabilities.json`:
+All five required flags are present in `capabilities.json`, plus the 1.1 additions:
 
 ```json
 "supportsHighlight": true,
 "supportsSynchronizingFilterState": true,
 "supportsLandingPage": true,
+"supportsEmptyDataView": true,
 "supportsKeyboardFocus": true,
 "supportsMultiVisualSelection": true,
+"supportsOnObjectFormatting": true,
+"enablePointerEventsFormatMode": true,
+"drilldown": { "roles": ["question"] },
 "privileges": []
 ```
 
@@ -76,17 +103,19 @@ and `"sorting": { "default": {} }` are also declared.
 
 | Role | Kind | Required | Description |
 |---|---|---|---|
-| `question` | Grouping | Yes | Question text. One diverging bar per value. |
+| `question` | Grouping | Yes | Question text. One diverging bar per value. A hierarchy here drills down. |
 | `response` | Grouping | Yes | Scale point. |
 | `value` | Measure | Yes | Count of answers, or any measure distributed across the scale. |
 | `order` | Measure | No | Numeric rank per scale point, 1 = leftmost. Fixes the order of the scale and feeds the mean. |
 | `group` | Grouping | No | Block the question belongs to. Pro. |
+| `panel` | Grouping | No | Small multiples: one chart per value. Pro. Without Pro the panels are added together. |
 | `tooltips` | Measure | No | Extra measures shown in the tooltip. |
 
-**Data view mapping.** Categorical. `categories` selects `group` then `question`
-(`dataReductionAlgorithm.top.count: 1000`); `values.group.by` is `response`
-(`top.count: 30`), binding `value`, `order` and `tooltips`. Conditions cap each role at one
-field.
+**Data view mapping.** Categorical. `categories` selects `group`, `question` and `panel`
+(`dataReductionAlgorithm.window.count: 1000`, extended with `fetchMoreData` in the service);
+`values.group.by` is `response` (`top.count: 30`), binding `value`, `order` and `tooltips`.
+Conditions cap `group`, `panel`, `response`, `value` and `order` at one field; `question` has
+no cap so a hierarchy can drill down.
 
 The 30-point cap on the scale applies to both tiers and is a rendering limit, not a licence
 gate: a Likert scale with more than 30 points is not a Likert scale.
@@ -171,10 +200,16 @@ displays that text literally in the label, with no script execution.
   `aria-label` of the form *"<question>, <response>: <share>%"*. Decorative elements —
   the watermark, the mean circles, the NPS pill — are `aria-hidden="true"`, since their
   numbers are already reachable in the segment labels and tooltips.
-- **High contrast.** `colorPalette.isHighContrast` is read on every render. When it is
-  active the diverging ramp is replaced by the theme's `foreground` and `foregroundSelected`,
-  so negative and positive segments stay distinguishable without relying on the palette.
-  See *Known gaps* below for what this does not yet cover.
+- **High contrast.** `colorPalette.isHighContrast` is read on every render, and the
+  *Accessibility → High contrast* setting can force it on. In high contrast every element —
+  bars, text, axis, gridlines, separators, pills, legend, guide and start screen — uses the
+  theme's `foreground`, `background` and `foregroundSelected`, and each scale point gets a
+  pattern (hatching direction = side, density = distance from neutral, dots = neutral), so the
+  scale reads without colour.
+- **Accessibility card** (`objects.accessibility`): focus colour and width (the focused
+  segment gets a visible outline), minimum text size applied to every text, and the same
+  patterns available outside high contrast.
+- Up and down arrows move to the same answer in the next or previous question.
 
 ---
 
@@ -186,19 +221,28 @@ displays that text literally in the label, with no script execution.
   highlight are drawn at reduced opacity rather than removed.
 - **Report page tooltips**, declared with `canvas: true`, with identities passed to
   `tooltipService.show()`.
-- **Number formatting.** Values are formatted with `valueFormatter.create()`, using the
-  column's own `source.format` from the model and `host.locale`, rebuilt on every `update()`
-  rather than cached.
-- **Landing page.** `supportsLandingPage` is declared and the visual draws a prompt naming
-  the three required wells when `Value` is missing, instead of an empty canvas or an error.
+- **Number formatting.** Values are formatted with `valueFormatter.create()` and `host.locale`,
+  using the per-value dynamic format string when present and `getFormatStringByColumn()`
+  otherwise; formatters are cached per format string.
+- **Landing page.** `supportsLandingPage` is declared and the visual draws a start screen with
+  the three required wells and links (guide, product page, video, opened only on click through
+  `host.launchUrl`) when `Value` is missing, instead of an empty canvas or an error.
+- **Bookmarks.** `registerOnSelectCallback` stores the restored identities and repaints;
+  identities are matched by key and by `equals()` in both directions.
+- **Selection with every identity.** A segment that adds up several rows (panels added
+  together in the free tier, an expanded hierarchy) selects all of them with
+  `select(ids, false)`; the toggle is computed in the visual.
 - **Format pane** uses `getFormattingModel()` (`powerbi-visuals-utils-formattingmodel`), not
   the deprecated `enumerateObjectInstances`.
 - **Conditional formatting** on the scale colour is declared on the formatting-model slice
   with `instanceKind: 3` (ConstantOrRule) and a
   `dataViewWildcard.createDataViewWildcardSelector(InstancesAndTotals)` selector, so a single
   `fx` button governs the whole scale rather than one per response.
-- **Allow Interactions.** `host.allowInteractions` is checked before selection, keyboard
-  activation and the context menu.
+- **Allow Interactions.** `host.hostCapabilities.allowInteractions` is checked before selection,
+  keyboard activation, the context menu and the setup guide.
+- **On-object formatting** with `HtmlSubSelectionHelper` (powerbi-visuals-utils-onobjectutils):
+  bars, questions, legend, value axis, category axis title, gridlines, panel titles and
+  background. In format mode clicks do not select data.
 
 ---
 
@@ -216,6 +260,9 @@ Available with no licence and in every reading view:
 - Cross-filtering, multi-select and the context menu
 - Keyboard navigation and screen-reader labels
 - Per-block colours
+- Row height Automatic or Fixed, drilldown, value axis, axis titles and gridlines
+- Accessibility card, on-object formatting, setup guide, Report theme, layouts by size
+- Dynamic format strings, bookmarks, Fetch More Data, 12 languages
 - Format pane: all cards. Pro options are visible and marked `[Pro]`; they apply only with a
   licence.
 
@@ -225,6 +272,8 @@ Available with no licence and in every reading view:
 - NPS, drawn as a pill with its own colours and size
 - Benchmark line across every question
 - Question groups drawn as labelled blocks, with the block mean in a circle
+- Small multiples (preview: first 4 panels)
+- The six collection styles: Boardroom, Ledger, Editorial, Signal, Aurora, Terrace
 
 ---
 
@@ -242,7 +291,13 @@ Available with no licence and in every reading view:
 5. Click a segment: other visuals filter. `Ctrl`+click adds. Clicking empty space clears.
 6. Tab to the chart, move with the arrow keys, `Enter` to select, `Escape` to clear,
    `Shift+F10` for the context menu.
-7. Resize the visual very narrow: the question column is capped and the bars remain visible.
+7. Resize the visual very narrow, and to 300 × 170: the question column is capped, the
+   legend becomes compact and the bars remain visible.
+9. Put a hierarchy in Question and drill down from the visual header.
+10. Drag a field to Small multiples in edit mode: the first 4 panels render under the
+    watermark with a note; reading view adds the panels into one chart.
+11. Save a bookmark with a segment selected, clear, apply the bookmark: the segment is
+    highlighted again.
 8. Set Negative points to 0 and then to the full width of the scale: the chart must not break
    or overflow its area.
 
@@ -263,24 +318,15 @@ literally in the label with no alert.
 
 ## Known gaps
 
-1. **High contrast is partial.** The scale colours switch to the theme's `foreground` and
-   `foregroundSelected`, so segments stay legible and the negative/positive split is
-   preserved. The axis line, row separators, block chrome and label text still use fixed
-   colours, and all negative points share one theme colour rather than being distinguished
-   from each other. Full theme-colour coverage and a non-colour encoding for the scale
-   points are planned for the next release.
-2. **Bookmarks are not restored into the visual.** Selection made in the chart
-   cross-filters the report correctly, but `registerOnSelectCallback` is not implemented, so
-   a bookmark that carries a selection does not paint it back onto the segments. It is on
-   the list for the next release.
-3. **`Scale order` is undetectable when absent.** With the well empty the visual falls back
+1. **`Scale order` is undetectable when absent.** With the well empty the visual falls back
    to the position of each response in the order Power BI supplies, which is alphabetical
-   unless the model sorts it. A diverging chart on an alphabetical scale is wrong, and the
-   visual cannot tell. It is documented prominently in the support page and the sample
-   report; detecting it is not possible from the data alone.
+   unless the model sorts it. It is documented prominently in the support page; detecting it
+   is not possible from the data alone.
+2. **Fetch More Data in Power BI Desktop.** As in Treemap by TCViz, the visual uses the first
+   1,000 rows in Desktop and asks for more only in the service; in both cases a note and the
+   warning icon say how many rows were used.
 
 ---
-
 ## Build Verification Checklist
 
 - [x] `isPro` resolved by `licenseManager`, never hardcoded in the submitted package

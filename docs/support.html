@@ -33,7 +33,7 @@
   <h1>Support — Likert Survey Pro</h1>
   <p><strong>Publisher:</strong> TCViz &nbsp;|&nbsp;
      <strong>Email:</strong> <a href="mailto:support@tcviz.com">support@tcviz.com</a> &nbsp;|&nbsp;
-     <strong>Version:</strong> 1.0.0.1</p>
+     <strong>Version:</strong> 1.1.0.0</p>
 
   <nav>
     <a href="changelog.html">Changelog</a>
@@ -74,25 +74,38 @@
   <h2>Field wells</h2>
   <table>
     <tr><th>Well</th><th>Type</th><th>What it does</th></tr>
-    <tr><td>Question</td><td>Grouping</td><td>One diverging bar per value</td></tr>
+    <tr><td>Question</td><td>Grouping</td><td>One diverging bar per value. Put a hierarchy (or several fields) here to <strong>drill down</strong> with the drill buttons in the visual header; <em>Expand all down</em> shows every level, labelled <em>Parent · Child</em></td></tr>
     <tr><td>Response</td><td>Grouping</td><td>The scale point</td></tr>
     <tr><td>Value</td><td>Measure</td><td>Count of responses, or any measure to distribute across the scale</td></tr>
     <tr><td>Scale order</td><td>Measure</td><td>Numeric rank per scale point, 1 = leftmost. Set its aggregation to <strong>Minimum</strong> if your table has one row per respondent</td></tr>
     <tr><td>Group <span class="badge">Pro</span></td><td>Grouping</td><td>Block the questions belong to, drawn as a shaded section</td></tr>
+    <tr><td>Small multiples <span class="badge">Pro</span></td><td>Grouping</td><td>One Likert chart per value (region, year, team) in a grid. Every panel lists the same questions in the same order; the question text is written once per row of the grid</td></tr>
     <tr><td>Tooltips</td><td>Measure</td><td>Extra measures in the tooltip</td></tr>
   </table>
+  <p>Limits: up to 30 scale points, and one row per question × group × panel. Power BI sends the
+     rows in blocks of 1,000; in the Power BI service the visual asks for the next blocks
+     (up to 21,000 rows). In Power BI Desktop it uses the first 1,000. When rows are left out, a
+     note under the chart and the warning icon in the visual header say how many were used —
+     the chart is never cut silently. Free and Pro have the same limits.</p>
 
   <h2>Format pane</h2>
   <table>
     <tr><th>Card</th><th>Settings</th></tr>
+    <tr><td>Style template</td><td><em>Template</em>: <strong>Report theme</strong> (default, free) or one of the six TCViz collection styles — Boardroom, Ledger, Editorial, Signal, Aurora, Terrace <span class="badge">Pro</span> — and <em>Setup guide</em> on or off</td></tr>
     <tr><td>Scale</td><td>Negative points, how to treat the neutral point, percentages or values</td></tr>
     <tr><td>Colors</td><td>The two ends and the neutral colour of the diverging ramp, and conditional formatting (<em>fx</em>) on the scale point colour</td></tr>
     <tr><td>Question table</td><td>Block column width, shading and its strength, a colour per block, the block score circle, and independent font, size and colour for block and question</td></tr>
     <tr><td>Labels</td><td>Values on segments, threshold to hide small ones, decimals, question column width, gap to the bars</td></tr>
     <tr><td>Top / Bottom box <span class="badge">Pro</span></td><td>Box size, NPS, text size and the two NPS colours</td></tr>
     <tr><td>Benchmark <span class="badge">Pro</span></td><td>Show, positive share and line colour</td></tr>
-    <tr><td>Layout</td><td>Scroll, minimum row height, gap between scale points and between rows</td></tr>
-    <tr><td>Legend</td><td>Show, top or bottom</td></tr>
+    <tr><td>Layout</td><td><em>Row height</em> (Automatic or Fixed, with the fixed height in px), scroll, minimum row height, gap between scale points and between rows</td></tr>
+    <tr><td>Value axis</td><td>Percent marks either side of the centre (0, 25%, 50%… to 100%), axis title and its text, text size and colour</td></tr>
+    <tr><td>Category axis</td><td>Title over the question column (empty text = the field name), size and colour</td></tr>
+    <tr><td>Gridlines</td><td>Show, every 10, 20, 25 or 50%, line colour, width and dashed or solid</td></tr>
+    <tr><td>Legend</td><td>Show, top or bottom, text size (0 = same as the labels) and colour</td></tr>
+    <tr><td>Small multiples <span class="badge">Pro</span></td><td>Columns (0 = automatic), space between panels, title size, colour, bold and alignment, panel background, panel border and its colour</td></tr>
+    <tr><td>Accessibility</td><td>High contrast (Automatic from Windows, or On), focus colour and width, minimum text size, patterns on the scale points</td></tr>
+    <tr><td>Background</td><td>Background colour (empty = transparent)</td></tr>
   </table>
 
   <h2>Frequently asked questions</h2>
@@ -155,7 +168,7 @@
   </details>
 
   <details>
-    <summary>Can I set the colour of each block?</summary>
+    <summary>Can I set the colour of each block? <span class="badge">Pro</span></summary>
     <p>Yes. <em>Question table</em> shows one colour picker per block, seeded from the report
        theme, so the colours follow the theme until you override them.</p>
   </details>
@@ -174,6 +187,85 @@
     <summary>The question text is cut off</summary>
     <p>The question column sizes itself to the longest question, up to <em>Labels → Question
        column width</em>. Raise that limit, or reduce the text size.</p>
+  </details>
+
+  <details>
+    <summary>Ten questions only fill the top half of a tall visual</summary>
+    <p>That was version 1.0. Since 1.1 <em>Layout → Row height</em> is <strong>Automatic</strong> by
+       default: the rows share the height of the visual, and the bars grow up to 64 px so that
+       two or three questions do not turn into huge blocks. Block bands, question text, labels
+       and the Top/Bottom and NPS columns follow the row. <strong>Fixed</strong> gives every row the
+       height you type; if they do not all fit, the chart scrolls (with <em>Scroll when rows do
+       not fit</em> on) or a note under the chart says how many questions are not shown.</p>
+  </details>
+
+  <details>
+    <summary>The visual is small on my page</summary>
+    <p>The layout adapts to three sizes. Below about 400 × 300 px the legend becomes compact
+       (all the swatches, with the two ends named), a narrow block column is dropped while its
+       shading stays, and the Top/Bottom and NPS columns are dropped before the bars shrink.
+       Below about 200 × 140 px only the questions and the bars remain. The diverging bar is
+       always the last thing to go.</p>
+  </details>
+
+  <h3>Styles and formatting</h3>
+
+  <details>
+    <summary>What does Report theme do, and what do the styles change?</summary>
+    <p><strong>Report theme</strong> (free, the default) takes text and block colours from the
+       report theme and keeps the diverging scale red → grey → blue unless you change it. The six
+       collection styles <span class="badge">Pro</span> are the same looks as KPI Card, Pareto,
+       Treemap and the rest of TCViz: background, text, axis, gridlines, scale ends, NPS colours,
+       benchmark and block colours. Anything you set by hand in the format pane wins over the
+       style. Without a licence, choosing a style shows it under the watermark while you edit;
+       reading view shows Report theme.</p>
+  </details>
+
+  <details>
+    <summary>Can I format the chart by clicking on it?</summary>
+    <p>Yes — on-object formatting. With Power BI's on-object interaction turned on, click the
+       bars, the questions, the legend, an axis, the gridlines, a panel title or the background
+       to get its formatting options and shortcuts. In format mode a click selects what to
+       format and never filters the report.</p>
+  </details>
+
+  <details>
+    <summary>What is the setup guide in the corner?</summary>
+    <p>A three-step guide that shows only while you edit and the visual is at least 420 × 260 px:
+       which fields are in place, buttons to try features on your own data (styles, Top/Bottom box
+       and NPS, benchmark, axis and gridlines, patterns), and a style picker. Close it with ✕ or
+       <em>Finish</em>; turn it back on in <em>Style template → Setup guide</em>. It only changes
+       format settings when you press a button, never the field wells.</p>
+  </details>
+
+  <details>
+    <summary>Number formats</summary>
+    <p>Values (with <em>Show as percentage</em> off) and tooltips use the format of the measure,
+       including <strong>dynamic format strings</strong>: when the measure's format changes row by
+       row, each value uses its own.</p>
+  </details>
+
+  <h3>Small multiples and drilldown</h3>
+
+  <details>
+    <summary>How do small multiples work? <span class="badge">Pro</span></summary>
+    <p>Drag a field to <em>Small multiples</em>. Each value gets its own panel with the same
+       questions in the same order, so a row reads across the grid. Without a licence, while you
+       edit, the first 4 panels show under the watermark and a note says how many there are; in
+       reading view the panels are added together into one chart, which is the correct total.</p>
+  </details>
+
+  <details>
+    <summary>How do I drill down?</summary>
+    <p>Put a hierarchy, or several fields, in <em>Question</em> — for example Dimension and then
+       Item. Use the drill buttons in the visual header or the context menu. Drilldown is free.</p>
+  </details>
+
+  <details>
+    <summary>Do bookmarks remember the selection?</summary>
+    <p>Yes: a bookmark that captures a selected segment, question or legend item paints it back
+       when you apply it. Format settings are part of the visual, not of the selection, so a
+       bookmark does not change them.</p>
   </details>
 
   <h3>Licensing</h3>
@@ -196,11 +288,27 @@
   </details>
 
   <h2>Accessibility</h2>
-  <p>The chart is a single Tab stop. Arrow keys move between segments, <code>Home</code> and
-     <code>End</code> jump to the ends, <code>Enter</code> or <code>Space</code> selects,
-     <code>Ctrl</code> adds to the selection, <code>Escape</code> clears it and
-     <code>Shift+F10</code> opens the context menu. Every segment carries a label with its
-     question, scale point and share. High contrast mode is honoured through the report theme.</p>
+  <p>The chart is a single Tab stop. Left and right arrows move between segments, up and down move
+     to the same answer in the question above or below, <code>Home</code> and <code>End</code> jump
+     to the ends, <code>Enter</code> or <code>Space</code> selects, <code>Ctrl</code> adds to the
+     selection, <code>Escape</code> clears it and <code>Shift+F10</code> or the menu key opens the
+     context menu. The focused segment gets a visible outline. Every segment carries a label with
+     its question, scale point and share.</p>
+  <p>The <em>Accessibility</em> card in the format pane sets:</p>
+  <ul>
+    <li><strong>High contrast</strong> — Automatic follows the Windows high contrast theme; On forces
+        it. In high contrast the bars are drawn in the system colours with a pattern per scale
+        point, so negative and positive answers stay apart without colour.</li>
+    <li><strong>Focus colour and width</strong> of the keyboard outline.</li>
+    <li><strong>Minimum text size</strong> for every text the visual writes.</li>
+    <li><strong>Patterns on scale points</strong> — hatching whose direction tells the side (negative
+        or positive) and whose density tells the distance from neutral; the neutral point is dotted.
+        The legend uses the same patterns.</li>
+  </ul>
+  <h2>Languages</h2>
+  <p>The format pane, field wells and the visual's own texts are translated into English, Spanish,
+     Portuguese (Brazil and Portugal), French, German, Italian, Dutch, Polish, Japanese, Chinese
+     (Simplified) and Korean, following the language of Power BI.</p>
 
   <h2>Privacy</h2>
   <p>The visual makes no network requests of any kind and stores nothing outside the report.

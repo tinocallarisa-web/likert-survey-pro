@@ -1,7 +1,8 @@
-# Likert Survey Pro — Tips & Hints (v1.0.0.1)
+# Likert Survey Pro — Tips & Hints (v1.1.0.0)
 
 **TCViz** · support@tcviz.com
 Demo video: https://www.youtube.com/watch?v=SzSs3gFReaY
+Documentation: https://tinocallarisa-web.github.io/likert-survey-pro/support.html
 
 ---
 
@@ -14,11 +15,15 @@ questions lean negative without reading the numbers.
 
 **Minimum to get a working chart:**
 
-1. Add the visual to the canvas.
+1. Add the visual to the canvas. The start screen lists the three fields it needs.
 2. Drag your question text to **Question**.
 3. Drag the answer text to **Response**.
 4. Drag a count of answers — or any measure — to **Value**.
 5. **Drag the numeric rank of each scale point to `Scale order`.** See the warning below.
+
+While you edit, a **setup guide** in the corner ticks off the fields, lets you try features on
+your own data and offers the styles. Close it with ✕; it comes back from
+*Style template → Setup guide*.
 
 > ⚠️ **`Scale order` is not optional in practice.** Without a defined order, Power BI hands
 > the responses over alphabetically — *Agree, Disagree, Neutral, Strongly agree, Strongly
@@ -36,20 +41,34 @@ should snap into place. That is the proof the well is doing its job.
 
 | Field | Required | Kind | What it does |
 |---|---|---|---|
-| **Question** | Yes | Grouping | One diverging bar per value. Up to 1,000. |
+| **Question** | Yes | Grouping | One diverging bar per value. A hierarchy (or several fields) gives **drilldown**. |
 | **Response** | Yes | Grouping | The scale point. Up to 30. |
 | **Value** | Yes | Measure | Count of answers, or any measure to distribute across the scale. |
 | **Scale order** | Strongly recommended | Measure | Numeric rank per scale point, 1 = leftmost. Fixes the order of the scale, and feeds the mean. |
 | **Group** *(Pro)* | No | Grouping | The block a question belongs to, drawn as a labelled section. |
+| **Small multiples** *(Pro)* | No | Grouping | One Likert chart per value — region, year, team — with the same questions. |
 | **Tooltips** | No | Measure | Extra measures in the hover tooltip, in their model format. |
 
 **Data shape.** One row per question × response, with the count in `Value`. If your source
 is one row per respondent, group it first — in Power Query or with a measure. The visual
 does not pivot raw responses.
 
+**How many rows.** Power BI sends the rows (question × group × panel) in blocks of 1,000. In
+the Power BI service the visual asks for the next blocks, up to 21,000 rows; in Power BI
+Desktop it uses the first 1,000. If rows are left out, a note under the chart and the warning
+icon in the visual header say how many were used. Free and Pro have the same limits.
+
 ---
 
 ## Format Pane Settings
+
+### Style template
+
+- **Template** — *Report theme* (default, free): text and block colours follow the report
+  theme; the scale keeps its red → grey → blue unless you change it. The six collection styles
+  *(Pro)* — Boardroom, Ledger, Editorial, Signal, Aurora, Terrace — are the same looks as KPI
+  Card, Pareto, Treemap and the rest of TCViz. Anything you set by hand wins over the style.
+- **Setup guide** — show or hide the guide while editing.
 
 ### Scale
 
@@ -61,10 +80,12 @@ does not pivot raw responses.
   - *Count as positive*: the neutral joins agreement. Use it when your scale has no true
     midpoint, or when "not dissatisfied" counts as a pass.
   - *Leave out of the bar*: the neutral is dropped and **the percentages recalculate over
-    the remaining answers**, so they add to 100% without it. This is the option that makes a
+    the remaining answers**, so they add to 100% without it. It needs a scale with a middle
+    point (as many negative as positive points, plus one). This is the option that makes a
     weak question look decisive — use it deliberately.
 - **Show as percentage** — on, every bar is the same length and questions with different
-  response counts stay comparable. Off, bar length shows volume.
+  response counts stay comparable. Off, the labels show the values in the measure's format,
+  including dynamic format strings.
 
 ### Colors
 
@@ -73,29 +94,56 @@ does not pivot raw responses.
 - **Scale point → fx** — conditional formatting on the scale colour. **One fx button for the
   whole scale, not one per response.**
 
-### Questions and blocks
+### Question table
 
 - Font, size and colour for the question labels and for the block headers.
 - **Block colours** — one picker per block.
+- **Block score** — the circle beside each block: mean, % positive or NPS.
 
 ### Labels
 
 - **Hide labels under (%)** — the threshold below which a segment's number is dropped. Raise
   it when bars get busy; a label that does not fit is worse than no label.
-- **Decimals** — 0 for a summary, 1 when differences are small.
+- **Decimal places** — 0 for a summary, 1 when differences are small.
+- **Question column width** and **Gap to the bars**.
 
-### Boxes, NPS and Benchmark *(Pro)*
+### Top / Bottom box and Benchmark *(Pro)*
 
 - **Top box / bottom box** — the share at each end, printed beside the bar, with the depth
   under your control.
-- **NPS** — top minus bottom, drawn as a pill with its own colours and size.
+- **NPS** — top minus bottom, drawn as a pill with its own colours.
 - **Benchmark** — a vertical line across every question, at a value you set. Use it for last
   wave's score or a company target.
 
 ### Layout
 
-- **Row gap** and **column gap** — the space between bars, and between the question column
-  and the chart. Tighten both when you have twenty questions on one page.
+- **Row height** — *Automatic* (default): the rows share the height of the visual and the bars
+  grow up to 64 px, so a tall visual is filled. *Fixed*: every row takes the height you type in
+  *Fixed row height*.
+- **Scroll when rows do not fit** — on, rows keep at least *Minimum row height* and the chart
+  scrolls; off, the rows that fit are drawn and a note says how many questions are not shown.
+- **Gap between rows** and **Gap between scale points**.
+
+### Value axis, Category axis, Gridlines
+
+- **Value axis** — percent marks either side of the centre and a title (empty text = "% of
+  responses").
+- **Category axis** — a title over the question column (empty text = the field name).
+- **Gridlines** — every 10, 20, 25 or 50 %, colour, width, dashed or solid.
+
+### Legend, Small multiples, Accessibility, Background
+
+- **Legend** — top or bottom, text size (0 = same as the labels) and colour. In a small visual
+  it turns compact: all the swatches, with the two ends named.
+- **Small multiples** *(Pro)* — columns (0 = automatic), space, title size, colour, bold and
+  alignment, panel background and border.
+- **Accessibility** — high contrast (Automatic or On), focus colour and width, minimum text
+  size, patterns on the scale points.
+- **Background** — a colour behind the chart (empty = transparent).
+
+**On-object formatting.** With Power BI's on-object interaction on, click the bars, the
+questions, the legend, an axis, the gridlines, a panel title or the background to format it
+directly.
 
 ---
 
@@ -105,37 +153,36 @@ does not pivot raw responses.
 |---|---|---|
 | Diverging stacked bars, centred | ✅ | ✅ |
 | All three neutral-point modes | ✅ | ✅ |
-| Percentages or values | ✅ | ✅ |
-| Diverging colour ramp | ✅ | ✅ |
-| Conditional formatting on scale colour | ✅ | ✅ |
+| Percentages or values, dynamic format strings | ✅ | ✅ |
+| Diverging colour ramp, conditional formatting on scale colour | ✅ | ✅ |
 | Legend, tooltips, report page tooltips | ✅ | ✅ |
-| Cross-filtering, multi-select, context menu | ✅ | ✅ |
-| Keyboard navigation | ✅ | ✅ |
-| Data labels and threshold | ✅ | ✅ |
-| Per-block colours | ✅ | ✅ |
+| Cross-filtering, multi-select, context menu, bookmarks | ✅ | ✅ |
+| Drilldown on Question | ✅ | ✅ |
+| Value axis, axis titles, gridlines | ✅ | ✅ |
+| Row height Automatic / Fixed, layouts by size | ✅ | ✅ |
+| Accessibility card, keyboard navigation, patterns | ✅ | ✅ |
+| On-object formatting, setup guide, Report theme, 12 languages | ✅ | ✅ |
 | Top box / bottom box | — | ✅ |
 | NPS pill | — | ✅ |
 | Benchmark line | — | ✅ |
-| Question groups (blocks) | — | ✅ |
-| Block mean circle | — | ✅ |
+| Question groups (blocks), block colours and block score circle | — | ✅ |
+| Small multiples | — | ✅ |
+| Six collection styles | — | ✅ |
 
 **The free tier gives a correct result, not a cut-down one.** No question, no scale point and
-no respondent is hidden, and nothing is watermarked in a published report. What Pro adds are
-the analyst readings on top.
+no respondent is hidden, and nothing is watermarked in a published report. With a field in
+Small multiples and no licence, the panels are added together into one correct chart.
 
 **While you are editing the report without a licence**, Pro options render *working* under a
-*Pro preview* watermark, and Power BI shows its own notice with the purchase option. In
-reading view — and wherever Power BI cannot check licences, such as Publish to Web, embedding
-or export — the free result is drawn with no watermark, so a published report never uses a
-Pro feature you have not paid for.
+*Pro preview* watermark (small multiples: the first 4 panels), and Power BI shows its own
+notice with the purchase option. In reading view — and wherever Power BI cannot check
+licences, such as Publish to Web, embedding or export — the free result is drawn with no
+watermark, and a note lists the Pro options not applied.
 
 **There is a one-month free trial.** Start it from the Upgrade option in Power BI's own
 notice, or from the plan on Microsoft AppSource. During the trial every Pro feature behaves
-exactly as a paid licence — no watermark, no notice — and when it ends the report falls back
-to the free result rather than breaking.
-
-To unlock Pro, use the Upgrade option in Power BI's own notice, or buy the plan on Microsoft
-AppSource. The visual draws no licensing UI of its own and has no licence key field.
+exactly as a paid licence, and when it ends the report falls back to the free result rather
+than breaking. The visual draws no licensing UI of its own and has no licence key field.
 
 ---
 
@@ -147,26 +194,30 @@ in each, the colours lie, and any mean over the scale is nonsense. Reverse-code 
 items in the model before they reach the visual.
 
 **Choose the neutral mode once, and say which one you used.** The three modes give three
-different percentages from the same data. Moving between them to find the friendliest number
-is how a survey stops being evidence. Put the choice in the report, not just in the format
+different percentages from the same data. Put the choice in the report, not just in the format
 pane.
 
-**Sort by the top box, not alphabetically.** The point of a diverging chart is the ranking.
-Sort the question axis by a top-box measure so the best and worst items sit at the ends.
+**Put the best and worst at the ends.** The point of a diverging chart is the ranking. Sort
+the questions (Sort axis in the visual header, or Sort by column in the model) so they read in
+order.
 
 **Use percentage for comparison, values for weight.** A question answered by 40 people and
-one answered by 400 look identical in percentage. If that matters, put the response count in
-Tooltips so the reader can check.
+one answered by 400 look identical in percentage. Put the response count in Tooltips so the
+reader can check.
 
 **Blocks earn their keep above about eight questions.** Below that they add chrome. Above it
 they are the difference between a chart and a wall.
 
+**Small multiples answer "where".** Region or team in Small multiples puts the same question
+in the same row of every panel, so the eye reads across.
+
 **Set the benchmark to the previous wave.** A single line turns "72% agree" into "up from
 65%", which is the sentence people act on.
 
-**Know how the block mean is weighted.** It is weighted by responses, not by questions, so a
-block where one item got far more answers is pulled towards that item. That is usually what
-you want, but it is worth knowing before you quote the number.
+**Turn on patterns for print and for colour-blind readers.** The hatching direction tells the
+side and the density the distance from neutral, so the chart survives a grey-scale printer.
+
+**Know how the block score is weighted.** It is weighted by responses, not by questions.
 
 ---
 
@@ -176,7 +227,8 @@ you want, but it is worth knowing before you quote the number.
 
 - Question → item text · Response → agreement scale · Value → count of answers
 - Scale order → 1–5 · Group → dimension (Engagement, Management, Workplace)
-- Pro: top box over the two most positive points, benchmark at last year's favourable score
+- Pro: top box over the two most positive points, benchmark at last year's favourable score,
+  Small multiples → region
 
 ### Customer satisfaction
 
@@ -186,39 +238,46 @@ you want, but it is worth knowing before you quote the number.
 
 ### Course evaluation
 
-- Question → statement · Response → 7-point agreement scale · Negative points = 3
-- Show as percentage on, sorted by top box
+- Question → course and statement as a hierarchy, to drill from course to statement
+- Response → 7-point agreement scale · Negative points = 3
+- Value axis and gridlines every 25 %
 
 ---
 
 ## Troubleshooting
 
 **The scale is in the wrong order**
-`Scale order` is empty, or it is not resolving to a number per response — it is read as the
-first numeric value in the group, so a text column will not work. Alternative: set *Sort by
-column* on the response column in the model.
+`Scale order` is empty, or it is not resolving to a number per response — the minimum numeric
+value in the group is used, so a text column will not work. Alternative: set *Sort by column*
+on the response column in the model.
+
+**Ten questions fill only half of a tall visual**
+Set *Layout → Row height* to *Automatic* (the default since 1.1). With *Fixed*, the row height
+is the one you typed.
+
+**"N questions do not fit"**
+Scrolling is off and the rows do not fit at their height. Turn on *Scroll when rows do not
+fit*, use *Row height: Automatic*, or make the visual taller.
+
+**"Showing the first N rows Power BI sent"**
+Your data has more rows than Power BI sends at once. In Power BI Desktop the visual uses the
+first 1,000; publish to the service, or reduce the rows (fewer questions, groups or panels).
+
+**A style or small multiples disappear in reading view**
+They are Pro. Without a licence they show only while you edit, under the watermark.
 
 **Everything is one colour**
-Only one scale point has data, or the Response field has a single distinct value. Check that
-the response column is not being filtered elsewhere on the page.
-
-**The mean circle looks wrong**
-The mean is computed from `Scale order` — or, when that well is empty, from the position in
-the scale — weighted by responses. It does not read any average column in your data. If a
-block reads low, check that its items are not reverse-worded.
+Only one scale point has data, or the Response field has a single distinct value.
 
 **Percentages do not add up to 100**
-You are using *Leave out of the bar* on the neutral point. That is what it does: the total is
-recalculated over the remaining answers.
+You are using *Leave out of the bar* on the neutral point. That is what it does.
 
 **Labels have disappeared**
-*Hide labels under (%)* is above those segments' share, or the segment is narrower than the
-text. Lower the threshold or widen the visual.
+*Hide labels under (%)* is above those segments' share, the segment is narrower than the
+text, or the visual is small (labels are dropped below about 200 × 140 px).
 
 **Only 30 scale points show**
-That is the cap, and it applies to Free and Pro alike. A scale with more than 30 points is
-not a Likert scale.
+That is the cap, and it applies to Free and Pro alike.
 
 **Clicking a segment breaks my slicers**
-Click an empty area to deselect. Selection in the chart cross-filters the page; clearing it
-restores the slicer-driven state.
+Click an empty area, or press Escape, to deselect.

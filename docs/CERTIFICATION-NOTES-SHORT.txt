@@ -1,43 +1,41 @@
-Likert Survey Pro 1.0.0.1 GUID likertSurveyProTCViz976FC0D15EE24876A338A1A985F3B2BC
+Likert Survey Pro 1.1.0.0 GUID likertSurveyProTCViz976FC0D15EE24876A338A1A985F3B2BC
 Source (branch certification): github.com/tinocallarisa-web/likert-survey-pro
 Pages (support, privacy, terms): tinocallarisa-web.github.io/likert-survey-pro
 Video: youtube.com/watch?v=SzSs3gFReaY | Full notes in docs/
 
-RESUBMISSION - 1200.1.2 FIXED
-Each update() emits exactly one renderingStarted and one Finished/Failed; the repaint
-after the licence resolves no longer calls update().
+NEW IN 1.1
+Row height (auto/fixed), drilldown on Question, value axis, axis titles, gridlines,
+Accessibility card, on-object formatting, setup guide, dynamic format strings, bookmarks
+(registerOnSelectCallback only repaints, no persistProperties), fetchMoreData (window 1000),
+12 languages. Pro: small multiples, six styles.
 
 PLEASE READ FIRST - PRO PREVIEW
 Without a licence, IN EDIT MODE ONLY, Pro options render working under a "Pro preview"
-watermark. Intentional, not missing gating. In reading view, before the licence resolves,
-and where licences cannot be read (Publish to Web, embed, export) the FREE result is drawn,
-no watermark, no notice. The gate is options.viewMode, not Desktop vs Service.
+watermark (small multiples: first 4 panels). Intentional, not missing gating. In reading
+view and where licences cannot be read, the FREE result is drawn, no watermark.
 
 TESTING - FREE (no active plan)
 1. Question + Response + Value + Scale order: the diverging scale renders centred.
-2. Remove Value: the landing page appears, not an error or blank canvas.
-3. In EDIT mode turn on Top/Bottom box, NPS or Benchmark, or drag a field to Group: each
-   renders WORKING under the watermark, a banner names it, and after ~10 s the Upgrade
-   bar appears.
-4. Reading view: free result, no watermark or notice.
+2. Remove Value: the start screen appears.
+3. EDIT mode: turn on Top/Bottom box, NPS, Benchmark or a style, or drag a field to Group
+   or Small multiples: it renders under the watermark, a banner names it, then Upgrade bar.
+4. Reading view: free result, no watermark; a note lists the Pro options not applied.
 5. Click a segment: the report filters; Ctrl+click adds. Tab in, arrows move, Enter
    selects, Escape clears, Shift+F10 the menu.
-6. Resize very narrow: the question column is capped, the bars stay visible.
-Plan "likert-survey-pro-tcviz" active (or its trial): no watermark.
+6. Resize to 300x170: bars and questions stay; legend becomes compact.
+Plan "likert-survey-pro-tcviz" (or "partner") active: no watermark.
 
 PRIVACY/NETWORK
-No network calls, telemetry, cookies or storage; privileges: []; the audit finds no
-external requests. No innerHTML/outerHTML: SVG via createElementNS, data via textContent.
+No network calls, telemetry, cookies or storage; privileges: []. Start screen links open
+only on click via host.launchUrl. No innerHTML: createElementNS and textContent.
 ESLint clean, npm audit 0.
 
 LICENSING
 IVisualLicenseManager only; no own licensing UI or key field. Requested once after the
-first render, never blocking it; failure stays Free, no prompts. Plan id or Service ID
-ending ".likert-survey-pro-tcviz", Active or Warning. Unsupported environments honoured;
-notifyFeatureBlocked + notifyLicenseRequired, cleared by clearLicenseNotification.
+first render, never blocking it; failure stays Free, no prompts. Active or Warning.
+clearLicenseNotification, notifyFeatureBlocked, then notifyLicenseRequired after ~10 s.
 
-KNOWN GAPS (next release)
-1. High contrast is partial: the scale takes the theme foreground colours so the
-   negative/positive split stays readable; axis and labels keep fixed.
-2. No registerOnSelectCallback: a bookmark carrying a selection is not painted back onto
-   the segments. Cross-filtering works.
+RENDERING EVENTS
+Each update() emits one renderingStarted and one Finished/Failed. Licence repaint, setup
+guide and fetchMoreData requests do not call update(). allowInteractions read from
+hostCapabilities.
