@@ -14,7 +14,10 @@ Versioning follows `MAJOR.MINOR.PATCH.BUILD` in `pbiviz.json` and semver in `pac
   do not fit, the chart scrolls, or a note says how many questions are not shown. Block bands,
   question text, labels and the right-hand columns follow the row.
 - **Drilldown** on the Question field: a hierarchy or several fields, with the drill buttons of
-  the visual header. *Expand all down* labels each bar *Parent · Child*.
+  the visual header. With two levels showing (expanded, or two fields), the first is the
+  question block and the second the question, as in 1.0 — block band, shading and block score
+  (Pro, like the Group well); with more levels the upper ones prefix the block name
+  (*Year · Block*). Drilled down to the last level, the bars are the questions alone.
 - **Value axis** (percent marks either side of the centre and a title), **category axis title**
   over the question column, and **gridlines** every 10, 20, 25 or 50 %, all configurable.
 - **Accessibility card**: high contrast Automatic or On, focus colour and width, minimum text

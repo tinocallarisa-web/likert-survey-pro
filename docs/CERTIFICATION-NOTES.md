@@ -16,7 +16,8 @@ current pair and returns. Verified in the simulator and with `node build-test.js
 
 - **Row height**: Automatic (rows share the height, bars up to 64 px) or Fixed; scroll or a
   visible note when rows do not fit, never a silent cut.
-- **Drilldown** on `question` (`drilldown.roles: ["question"]`, no `max` on the role).
+- **Drilldown** on `question` (`drilldown.roles: ["question"]`, no `max` on the role). With two
+  levels in the data view the first is the block and the second the question, as in 1.0.0.1.
 - **Small multiples** (Pro) on the new `panel` role.
 - **Value axis, axis titles and gridlines.**
 - **Accessibility** card (`objects.accessibility`): high contrast auto/on, focus colour and

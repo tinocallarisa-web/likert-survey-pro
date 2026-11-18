@@ -58,7 +58,9 @@ window.__dv = function(spec){
   const cats = [];
   const col = (name, q, role, vals) => ({ source: { displayName: name, queryName: q, roles: {[role]: true} }, values: vals, identity: vals.map((v,i)=>({i})) });
   if (spec.group) cats.push(col('Block', 'Survey.Block', 'group', rows.map(r => r.group)));
-  cats.push(col('Question', 'Survey.Question', 'question', rows.map(r => r.question)));
+  // levels: niveles del pozo Question tal como los manda Desktop con una jerarquía expandida
+  if (spec.levels) spec.levels.forEach(([name, q, field]) => cats.push(col(name, q, 'question', rows.map(r => r[field]))));
+  else cats.push(col('Question', 'Survey.Question', 'question', rows.map(r => r.question)));
   if (spec.question2) cats.push(col('Item', 'Survey.Item', 'question', rows.map(r => r.question2)));
   if (spec.panel) cats.push(col('Region', 'Survey.Region', 'panel', rows.map(r => r.panel)));
   const values = []; const groups = [];
@@ -186,6 +188,44 @@ async def main(mode):
                        rows=[dict(r, question2=("Item " + str(k % 2 + 1))) for k, r in enumerate(survey(6, False))]), 960, 400)
             await shot(b, "11_locale_es", spec(objects={"valueAxis": {"show": True, "showTitle": True}}), 960, 560, locale="es-ES")
             await shot(b, "11_locale_ja", spec(objects={"valueAxis": {"show": True, "showTitle": True}}), 960, 560, locale="ja-JP")
+
+            # Jerarquía en Question (regresión vista por Tino en Desktop, build 1.1.0.9): con dos niveles el
+            # primero es el bloque y el segundo la pregunta, como en la 1.0.
+            print("  Jerarquía en Question")
+            H = "Survey.Block Hierarchy."
+            rows = survey(10, False)
+            for r in rows:
+                r["year"] = "2026"
+            casos = [
+                ("13_hier_expanded", dict(group=False, levels=[["Block", H + "Block", "group"], ["Question", H + "Question", "question"]]), 3, 50),
+                ("13_hier_3_levels", dict(group=False, levels=[["Year", H + "Year", "year"], ["Block", H + "Block", "group"], ["Question", H + "Question", "question"]]), 3, 50),
+                ("13_hier_drilled_down", dict(group=False, levels=[["Question", H + "Question", "question"]]), 0, 50),
+                ("13_v10_group_plus_question", dict(group=True), 3, 50),
+            ]
+            for name, extra, bloques, tramos in casos:
+                sp = {"rows": rows, "responses": RESP, "objects": {}, **extra}
+                pg, errs = await page(b, 1000, 560)
+                await upd(pg, sp, 1000, 560)
+                await pg.screenshot(path=os.path.join(OUT, name + ".png"))
+                info = await pg.evaluate("""() => {
+                    const t = Array.from(document.querySelectorAll('.lk-scroll svg text')).map(x => x.textContent);
+                    return { segs: document.querySelectorAll('[data-seg]').length, circles: Array.from(document.querySelectorAll('.lk-scroll svg circle')).filter(e => !e.closest('defs')).length,
+                             blocks: t.filter(x => /Engag|Manag|Workp|^2026 · /.test(x)),
+                             q: t.filter(x => x === 'I am proud to work here').length, dot: t.filter(x => / · I am/.test(x)).length };
+                }""")
+                await pg.close()
+                print(f"    {name:28s} tramos {info['segs']}, bloques {info['blocks']}, círculos {info['circles']}, 'Padre · Hijo' {info['dot']}")
+                check(not errs, name + ": sin errores")
+                check(info["segs"] == tramos, f"{name}: {tramos} tramos")
+                check(len(info["blocks"]) == bloques, f"{name}: {bloques} bandas de bloque")
+                check(info["circles"] == bloques, f"{name}: puntuación del bloque en cada banda")
+                check(info["dot"] == 0 and info["q"] == 1, f"{name}: la pregunta sola, sin 'Padre · Hijo'")
+            pg, errs = await page(b, 1000, 560)
+            await upd(pg, {"rows": rows, "responses": RESP, "objects": {}, "group": False,
+                           "levels": [["Year", H + "Year", "year"], ["Block", H + "Block", "group"], ["Question", H + "Question", "question"]]}, 1000, 560)
+            pref = await pg.evaluate("() => Array.from(document.querySelectorAll('.lk-scroll svg text')).map(x => x.textContent).filter(x => x.startsWith('2026 · ')).length")
+            await pg.close()
+            check(pref == 3, "3 niveles: los de arriba se anteponen al bloque ('2026 · Engagement')")
 
             # Altura de fila: 3, 10 y 40 preguntas, visual bajo y alto, Automatic y Fixed.
             print("  Altura de fila")

@@ -518,7 +518,9 @@ export class Visual implements IVisual {
         add(raw.boxes.show, "boxes", "Feat_boxes", "Top/Bottom box");
         add(raw.boxes.showNps, "nps", "Feat_nps", "NPS");
         add(raw.benchmark.show, "benchmark", "Feat_benchmark", "the benchmark line");
-        add(!!dv.categorical?.categories?.some(c => c.source.roles?.["group"]), "groups", "Feat_groups", "question groups");
+        const cats = dv.categorical?.categories ?? [];
+        add(cats.some(c => c.source.roles?.["group"]) || cats.filter(c => c.source.roles?.["question"]).length >= 2,
+            "groups", "Feat_groups", "question groups");
         add(!!dv.categorical?.categories?.some(c => c.source.roles?.["panel"]), "panel", "Feat_panel", "small multiples");
         add(PRO_STYLES.indexOf(raw.style.template) >= 0, "style", "Feat_style", "the collection styles");
         this.attemptedPro = this.isPro ? [] : w;
@@ -625,7 +627,13 @@ export class Visual implements IVisual {
         const groups = this.sortByScaleOrder(cat.values.grouped ? cat.values.grouped() : []);
         const proNow = this.proActive;
         const s = this.settings;
-        this.questionName = qCols.map(c => c.source.displayName).join(" · ");
+        // Niveles de Question (drilldown expandido o varios campos) como en la 1.0: con dos o más, el
+        // último es la pregunta y el penúltimo el bloque (si no hay campo en Group). Bajando un nivel
+        // Power BI manda solo el de abajo: no hay bloque y no se inventa.
+        const qLabelCols = qCols.length >= 2 ? [qCols[qCols.length - 1]] : qCols;
+        const bCol = gCol ?? (qCols.length >= 2 ? qCols[qCols.length - 2] : undefined);
+        const blockPrefix = gCol ? qCols.slice(0, -1) : qCols.slice(0, -2);
+        this.questionName = qLabelCols.map(c => c.source.displayName).join(" · ");
 
         // Orden de la escala: el de los grupos, que sigue la ordenación del modelo.
         const kept = groups.slice(0, FREE_MAX_RESPONSES);
@@ -665,10 +673,14 @@ export class Visual implements IVisual {
         const accs = new Map<string, Acc>();
         const order: Acc[] = [];
         for (let i = 0; i < n; i++) {
-            const question = qCols.map(c => this.name(c.values[i])).join(" · ");
-            const group = gCol && proNow ? this.name(gCol.values[i]) : null;
+            const question = qLabelCols.map(c => this.name(c.values[i])).join(" · ");
+            // El bloque sale del pozo Group o, sin él, del penúltimo nivel de Question; los niveles
+            // de arriba se anteponen ("Año · Bloque"). Sin Pro no se dibuja, pero sigue en la clave:
+            // dos preguntas con el mismo texto en bloques distintos no se suman.
+            const blockName = bCol ? [...blockPrefix, bCol].map(c => this.name(c.values[i])).join(" · ") : "";
+            const group = bCol && proNow ? blockName : null;
             const panel = pCol && proNow ? this.name(pCol.values[i]) : null;
-            const qKey = (group ?? "") + "\u0001" + question;
+            const qKey = blockName + "\u0001" + question;
             const key = (panel ?? "") + "\u0002" + qKey;
             let a = accs.get(key);
             if (!a) {
@@ -676,9 +688,9 @@ export class Visual implements IVisual {
                     row: {
                         key, qKey, question, group, panel, total: 0, segments: [], negShare: 0, posShare: 0,
                         topBox: 0, bottomBox: 0, mean: 0, ids: [],
-                        groupSelectionId: gCol ? this.host.createSelectionIdBuilder().withCategory(gCol, i).createSelectionId() : null,
+                        groupSelectionId: bCol ? this.host.createSelectionIdBuilder().withCategory(bCol, i).createSelectionId() : null,
                         // El color del bloque llega en los objects de su propia columna.
-                        groupColor: gCol ? (((gCol as any).objects?.[i]?.qtable?.blockFillColor?.solid?.color) || null) : null,
+                        groupColor: bCol ? (((bCol as any).objects?.[i]?.qtable?.blockFillColor?.solid?.color) || null) : null,
                     },
                     v: kept.map(() => 0), ids: kept.map(() => []), hl: kept.map(() => false),
                     fmt: kept.map(() => undefined), tips: kept.map(() => new Map()),
@@ -1863,7 +1875,7 @@ export class Visual implements IVisual {
             row(has("response"), this.t("Role_Response", "Response"), this.t("Guide_ResponseWhy", "the scale points, from most negative to most positive"));
             row(has("value"), this.t("Role_Value", "Value"), this.t("Guide_ValueWhy", "the count of answers"));
             row(has("order"), this.t("Role_Order", "Scale order"), this.t("Guide_OrderWhy", "optional: a number per scale point fixes the order and the mean"));
-            row(has("group"), this.t("Guide_Group", "Group"), this.t("Guide_GroupWhy", "blocks of questions with a score per block"), true);
+            row(has("group") || cols.filter(c => c.roles?.["question"]).length >= 2, this.t("Guide_Group", "Group"), this.t("Guide_GroupWhy", "blocks of questions with a score per block"), true);
             row(has("panel"), this.t("Guide_Panel", "Small multiples"), this.t("Guide_PanelWhy", "one chart per region, year or team"), true);
             const note = mk("div", "lk-g-note", this.t("Guide_Wells", "Drag the fields into the field wells; this list updates by itself."));
             note.style.color = muted;
