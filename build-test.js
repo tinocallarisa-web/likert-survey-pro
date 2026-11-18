@@ -8,6 +8,9 @@
  *                                      renderingStarted y un Finished/Failed. Rojo: el fallo
  *                                      del rechazo 1200.1.2 (02-10-2026).
  *
+ * Cada build lleva su versión (último dígito = contador local) y una marca "test AAAA-MM-DD HH:MM"
+ * en la esquina superior derecha (TEST_STAMP_MARKER), para saber qué build ejecuta Desktop.
+ *
  * El modo --free es el ÚNICO con el que se pueden probar la vista previa Pro, su marca
  * de agua y los avisos de compra: con Pro forzado no se muestran, por diseño.
  *
@@ -90,11 +93,33 @@ try {
         ts = ts.replace(EV_ANCHOR, EV_CODE).replace(UPD_ANCHOR, UPD_CODE);
         console.log("Instrumentacion de eventos: ON");
     }
+    // Marca de compilación en una esquina: saber QUÉ build está ejecutando Desktop.
+    const STAMP_FIND = 'const TEST_STAMP = ""; // TEST_STAMP_MARKER';
+    if (!ts.includes(STAMP_FIND)) {
+        console.error("TEST_STAMP_MARKER no encontrado en visual.ts. Actualiza ESTE script.");
+        process.exit(1);
+    }
+    const d = new Date();
+    const p2 = (n) => String(n).padStart(2, "0");
+    const stamp = (forceFree ? "testfree " : "test ") + d.getFullYear() + "-" + p2(d.getMonth() + 1) + "-" + p2(d.getDate())
+        + " " + p2(d.getHours()) + ":" + p2(d.getMinutes());
+    ts = ts.replace(STAMP_FIND, 'const TEST_STAMP = "' + stamp + '"; // PATCHED BY build-test.js');
     fs.writeFileSync(VISUAL_TS, ts, "utf8");
     pbivizObj.visual.guid = pbivizObj.visual.guid + suffix;
+    // Power BI Desktop guarda cada visual por guid + versión: con la misma versión sigue sirviendo el
+    // paquete anterior. Cada build de prueba lleva su propio último dígito (contador local en .tmp/).
+    const CONTADOR = path.join(ROOT, ".tmp", "test-build-counter");
+    fs.mkdirSync(path.dirname(CONTADOR), { recursive: true });
+    const nBuild = (parseInt(fs.existsSync(CONTADOR) ? fs.readFileSync(CONTADOR, "utf8") : "0", 10) || 0) + 1;
+    fs.writeFileSync(CONTADOR, String(nBuild), "utf8");
+    const partes = pbivizObj.visual.version.split(".");
+    partes[3] = String(Number(partes[3]) + nBuild);
+    pbivizObj.visual.version = partes.join(".");
+    pbivizObj.visual.displayName += forceFree ? " (test free)" : " (test)";
+    console.log("Version de prueba: " + pbivizObj.visual.version + "  marca: " + stamp);
     fs.writeFileSync(PBIVIZ_JSON, JSON.stringify(pbivizObj, null, 2), "utf8");
 
-    execSync("npx pbiviz package", { stdio: "inherit", cwd: ROOT });
+    execSync("npx pbiviz package" + (process.argv.includes("--verbose") ? " --verbose" : ""), { stdio: "inherit", cwd: ROOT });
     console.log("\nBuild TEST listo en dist/. Importalo en Power BI Desktop y prueba.");
 } finally {
     restore();

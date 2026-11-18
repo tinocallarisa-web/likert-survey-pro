@@ -4,13 +4,13 @@
     "displayName": "Likert Survey Pro",
     "guid": "likertSurveyProTCViz976FC0D15EE24876A338A1A985F3B2BC",
     "visualClassName": "Visual",
-    "version": "1.0.0.1",
-    "description": "Diverging stacked bars for Likert and survey data, centred on the neutral response. Top/Bottom box and NPS. Certified, with no network access: no data leaves the report.",
+    "version": "1.1.0.0",
+    "description": "Diverging stacked bars for Likert and survey data, centred on the neutral response. Drilldown, axis and gridlines, accessibility options and 12 languages; Pro adds Top/Bottom box, NPS, benchmark, groups, small multiples and styles. No network access.",
     "supportUrl": "https://tinocallarisa-web.github.io/likert-survey-pro/support.html",
     "gitHubUrl": "https://github.com/tinocallarisa-web/likert-survey-pro",
     "privacyTermsLink": "https://tinocallarisa-web.github.io/likert-survey-pro/privacy.html"
   },
-  "apiVersion": "5.11.0",
+  "apiVersion": "5.11.1",
   "author": {
     "name": "TCViz",
     "email": "support@tcviz.com"
@@ -23,6 +23,16 @@
   "capabilities": "capabilities.json",
   "stringResources": [
     "stringResources/en-US/resources.resjson",
-    "stringResources/es-ES/resources.resjson"
+    "stringResources/es-ES/resources.resjson",
+    "stringResources/pt-BR/resources.resjson",
+    "stringResources/fr-FR/resources.resjson",
+    "stringResources/de-DE/resources.resjson",
+    "stringResources/it-IT/resources.resjson",
+    "stringResources/nl-NL/resources.resjson",
+    "stringResources/pl-PL/resources.resjson",
+    "stringResources/ja-JP/resources.resjson",
+    "stringResources/zh-CN/resources.resjson",
+    "stringResources/ko-KR/resources.resjson",
+    "stringResources/pt-PT/resources.resjson"
   ]
 }

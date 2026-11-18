@@ -18,6 +18,11 @@ const CONSTANT_OR_RULE = 3 as powerbi.VisualEnumerationInstanceKinds;
  * El Service ID completo es editor.oferta.plan, y es lo que devuelve spIdentifier.
  */
 export const SP_IDENTIFIER = "likert-survey-pro-tcviz";
+/**
+ * Planes que dan el Pro: el público y el privado "partner" (norma de la cartera desde 02-10-2026:
+ * un plan privado tiene otro Plan ID y, con uno solo fijo en el código, quien lo compra se queda en Free).
+ */
+export const PRO_PLAN_IDS = [SP_IDENTIFIER, "partner"];
 
 /**
  * getAvailableServicePlans() devuelve el Service ID COMPLETO (publisher.offer.plan), no el
@@ -30,8 +35,30 @@ export function matchesPlan(spIdentifier: unknown, planId: string): boolean {
 
 /** Un único sitio para el tope: duplicar una constante es como acaba divergiendo. */
 export const FREE_MAX_RESPONSES = 30;
+/** Small multiples sin licencia, editando: los primeros paneles, con la marca de agua. */
+export const PREVIEW_PANELS = 4;
+/** Tope de alto de BARRA con "Row height: Automatic": 2 o 3 preguntas no salen como bloques enormes. */
+export const AUTO_MAX_BAR = 64;
+
+/** Los seis estilos de la colección (Pro). "clean" = Report theme, gratis y por defecto. */
+export const PRO_STYLES = ["boardroom", "ledger", "editorial", "signal", "aurora", "terrace"];
 
 // ── Tarjetas del panel de formato ────────────────────────────────────────────
+// Orden común de la cartera (utillaje/notas/estandar-panel-formato.md): Style template primero,
+// las tarjetas propias, ejes, leyenda, small multiples, accesibilidad y fondo. Los nombres
+// internos de las tarjetas que ya existían no se tocan: los informes guardados los leen.
+
+class StyleCard extends Card {
+    template = new formattingSettings.AutoDropdown({
+        name: "template", displayNameKey: "Prop_StyleTemplate", value: "clean"
+    });
+    guide = new formattingSettings.ToggleSwitch({
+        name: "guide", displayNameKey: "Prop_StyleGuide", value: true
+    });
+    name = "style";
+    displayNameKey = "Obj_Style";
+    slices = [this.template, this.guide];
+}
 
 class ScaleCard extends Card {
     negativeCount = new formattingSettings.NumUpDown({
@@ -204,6 +231,12 @@ class BenchmarkCard extends Card {
 }
 
 class LayoutCard extends Card {
+    rowHeightMode = new formattingSettings.AutoDropdown({
+        name: "rowHeightMode", displayNameKey: "Prop_LayoutRowHeightMode", value: "auto"
+    });
+    rowHeight = new formattingSettings.NumUpDown({
+        name: "rowHeight", displayNameKey: "Prop_LayoutRowHeight", value: 32
+    });
     enableScroll = new formattingSettings.ToggleSwitch({
         name: "enableScroll", displayNameKey: "Prop_LayoutEnableScroll", value: true
     });
@@ -218,7 +251,68 @@ class LayoutCard extends Card {
     });
     name = "layout";
     displayNameKey = "Obj_Layout";
-    slices = [this.enableScroll, this.minRowHeight, this.segmentGap, this.rowGap];
+    slices = [this.rowHeightMode, this.rowHeight, this.enableScroll, this.minRowHeight,
+              this.segmentGap, this.rowGap];
+}
+
+class ValueAxisCard extends Card {
+    show = new formattingSettings.ToggleSwitch({
+        name: "show", displayNameKey: "Prop_ValueAxisShow", value: false
+    });
+    showTitle = new formattingSettings.ToggleSwitch({
+        name: "showTitle", displayNameKey: "Prop_ValueAxisShowTitle", value: false
+    });
+    titleText = new formattingSettings.TextInput({
+        name: "titleText", displayNameKey: "Prop_ValueAxisTitleText", value: "", placeholder: ""
+    });
+    fontSize = new formattingSettings.NumUpDown({
+        name: "fontSize", displayNameKey: "Prop_ValueAxisFontSize", value: 9
+    });
+    color = new formattingSettings.ColorPicker({
+        name: "color", displayNameKey: "Prop_ValueAxisColor", value: { value: "" }
+    });
+    name = "valueAxis";
+    displayNameKey = "Obj_ValueAxis";
+    slices = [this.show, this.showTitle, this.titleText, this.fontSize, this.color];
+}
+
+class CategoryAxisCard extends Card {
+    showTitle = new formattingSettings.ToggleSwitch({
+        name: "showTitle", displayNameKey: "Prop_CategoryAxisShowTitle", value: false
+    });
+    titleText = new formattingSettings.TextInput({
+        name: "titleText", displayNameKey: "Prop_CategoryAxisTitleText", value: "", placeholder: ""
+    });
+    fontSize = new formattingSettings.NumUpDown({
+        name: "fontSize", displayNameKey: "Prop_CategoryAxisFontSize", value: 11
+    });
+    color = new formattingSettings.ColorPicker({
+        name: "color", displayNameKey: "Prop_CategoryAxisColor", value: { value: "" }
+    });
+    name = "categoryAxis";
+    displayNameKey = "Obj_CategoryAxis";
+    slices = [this.showTitle, this.titleText, this.fontSize, this.color];
+}
+
+class GridlinesCard extends Card {
+    show = new formattingSettings.ToggleSwitch({
+        name: "show", displayNameKey: "Prop_GridlinesShow", value: false
+    });
+    step = new formattingSettings.AutoDropdown({
+        name: "step", displayNameKey: "Prop_GridlinesStep", value: "25"
+    });
+    color = new formattingSettings.ColorPicker({
+        name: "color", displayNameKey: "Prop_GridlinesColor", value: { value: "" }
+    });
+    width = new formattingSettings.NumUpDown({
+        name: "width", displayNameKey: "Prop_GridlinesWidth", value: 1
+    });
+    dashed = new formattingSettings.ToggleSwitch({
+        name: "dashed", displayNameKey: "Prop_GridlinesDashed", value: true
+    });
+    name = "gridlines";
+    displayNameKey = "Obj_Gridlines";
+    slices = [this.show, this.step, this.color, this.width, this.dashed];
 }
 
 class LegendCard extends Card {
@@ -228,9 +322,79 @@ class LegendCard extends Card {
     position = new formattingSettings.AutoDropdown({
         name: "position", displayNameKey: "Prop_LegendPosition", value: "bottom"
     });
+    fontSize = new formattingSettings.NumUpDown({
+        name: "fontSize", displayNameKey: "Prop_LegendFontSize", value: 0
+    });
+    color = new formattingSettings.ColorPicker({
+        name: "color", displayNameKey: "Prop_LegendColor", value: { value: "" }
+    });
     name = "legend";
     displayNameKey = "Obj_Legend";
-    slices = [this.show, this.position];
+    slices = [this.show, this.position, this.fontSize, this.color];
+}
+
+class SmallMultiplesCard extends Card {
+    columns = new formattingSettings.NumUpDown({
+        name: "columns", displayNameKey: "Prop_SmColumns", value: 0
+    });
+    gap = new formattingSettings.NumUpDown({
+        name: "gap", displayNameKey: "Prop_SmGap", value: 8
+    });
+    titleSize = new formattingSettings.NumUpDown({
+        name: "titleSize", displayNameKey: "Prop_SmTitleSize", value: 12
+    });
+    titleColor = new formattingSettings.ColorPicker({
+        name: "titleColor", displayNameKey: "Prop_SmTitleColor", value: { value: "" }
+    });
+    titleBold = new formattingSettings.ToggleSwitch({
+        name: "titleBold", displayNameKey: "Prop_SmTitleBold", value: true
+    });
+    titleAlign = new formattingSettings.AutoDropdown({
+        name: "titleAlign", displayNameKey: "Prop_SmTitleAlign", value: "left"
+    });
+    background = new formattingSettings.ColorPicker({
+        name: "background", displayNameKey: "Prop_SmBackground", value: { value: "" }
+    });
+    border = new formattingSettings.ToggleSwitch({
+        name: "border", displayNameKey: "Prop_SmBorder", value: false
+    });
+    borderColor = new formattingSettings.ColorPicker({
+        name: "borderColor", displayNameKey: "Prop_SmBorderColor", value: { value: "#E1DFDD" }
+    });
+    name = "smallMultiples";
+    displayNameKey = "Obj_SmallMultiples";
+    slices = [this.columns, this.gap, this.titleSize, this.titleColor, this.titleBold, this.titleAlign,
+              this.background, this.border, this.borderColor];
+}
+
+class AccessibilityCard extends Card {
+    highContrast = new formattingSettings.AutoDropdown({
+        name: "highContrast", displayNameKey: "Prop_AccHighContrast", value: "auto"
+    });
+    focusColor = new formattingSettings.ColorPicker({
+        name: "focusColor", displayNameKey: "Prop_AccFocusColor", value: { value: "#1F4E80" }
+    });
+    focusWidth = new formattingSettings.NumUpDown({
+        name: "focusWidth", displayNameKey: "Prop_AccFocusWidth", value: 2
+    });
+    minTextSize = new formattingSettings.NumUpDown({
+        name: "minTextSize", displayNameKey: "Prop_AccMinTextSize", value: 8
+    });
+    patterns = new formattingSettings.ToggleSwitch({
+        name: "patterns", displayNameKey: "Prop_AccPatterns", value: false
+    });
+    name = "accessibility";
+    displayNameKey = "Obj_Accessibility";
+    slices = [this.highContrast, this.focusColor, this.focusWidth, this.minTextSize, this.patterns];
+}
+
+class BackgroundCard extends Card {
+    color = new formattingSettings.ColorPicker({
+        name: "color", displayNameKey: "Prop_BackgroundColor", value: { value: "" }
+    });
+    name = "background";
+    displayNameKey = "Obj_Background";
+    slices = [this.color];
 }
 
 /**
@@ -249,6 +413,7 @@ export function makeBlockColorSlice(nombre: string, color: string, selector: any
 }
 
 export class LikertFormattingModel extends Model {
+    style = new StyleCard();
     scale = new ScaleCard();
     colors = new ColorsCard();
     qtable = new QuestionTableCard();
@@ -256,9 +421,16 @@ export class LikertFormattingModel extends Model {
     boxes = new BoxesCard();
     benchmark = new BenchmarkCard();
     layout = new LayoutCard();
+    valueAxis = new ValueAxisCard();
+    categoryAxis = new CategoryAxisCard();
+    gridlines = new GridlinesCard();
     legend = new LegendCard();
-    cards = [this.scale, this.colors, this.qtable, this.labels, this.boxes,
-             this.benchmark, this.layout, this.legend];
+    smallMultiples = new SmallMultiplesCard();
+    accessibility = new AccessibilityCard();
+    background = new BackgroundCard();
+    cards = [this.style, this.scale, this.colors, this.qtable, this.labels, this.boxes,
+             this.benchmark, this.layout, this.valueAxis, this.categoryAxis, this.gridlines,
+             this.legend, this.smallMultiples, this.accessibility, this.background];
 }
 
 // ── Objeto plano para el render ──────────────────────────────────────────────
@@ -266,6 +438,7 @@ export class LikertFormattingModel extends Model {
 // evita que el render tenga que conocer la forma del modelo de formato.
 
 export interface LikertSettings {
+    style: { template: string; guide: boolean };
     scale: { negativeCount: number; neutralMode: "split" | "right" | "exclude"; asPercent: boolean };
     colors: { negativeColor: string; positiveColor: string; neutralColor: string };
     qtable: { blockWidth: number; blockFill: boolean; blockOpacity: number;
@@ -279,24 +452,39 @@ export interface LikertSettings {
     boxes: { show: boolean; size: number; showNps: boolean; fontSize: number;
              textColor: string; npsPositive: string; npsNegative: string };
     benchmark: { show: boolean; value: number; color: string };
-    layout: { enableScroll: boolean; minRowHeight: number; segmentGap: number; rowGap: number };
-    legend: { show: boolean; position: "top" | "bottom" };
+    layout: { rowHeightMode: "auto" | "fixed"; rowHeight: number;
+              enableScroll: boolean; minRowHeight: number; segmentGap: number; rowGap: number };
+    valueAxis: { show: boolean; showTitle: boolean; titleText: string; fontSize: number; color: string };
+    categoryAxis: { showTitle: boolean; titleText: string; fontSize: number; color: string };
+    gridlines: { show: boolean; step: number; color: string; width: number; dashed: boolean };
+    legend: { show: boolean; position: "top" | "bottom"; fontSize: number; color: string };
+    smallMultiples: { columns: number; gap: number; titleSize: number; titleColor: string; titleBold: boolean;
+                      titleAlign: "left" | "center"; background: string; border: boolean; borderColor: string };
+    accessibility: { highContrast: "auto" | "on"; focusColor: string; focusWidth: number;
+                     minTextSize: number; patterns: boolean };
+    background: { color: string };
 }
 
 const clamp = (v: number, lo: number, hi: number, def: number) =>
     isFinite(v) ? Math.max(lo, Math.min(hi, v)) : def;
+const color = (c: { value?: { value?: string } }, def: string) => c.value?.value ?? def;
 
 export function toSettings(m: LikertFormattingModel): LikertSettings {
+    const tpl = String(m.style.template.value ?? "clean");
     return {
+        style: {
+            template: tpl === "clean" || PRO_STYLES.indexOf(tpl) >= 0 ? tpl : "clean",
+            guide: !!m.style.guide.value,
+        },
         scale: {
             negativeCount: Math.max(0, Math.round(clamp(m.scale.negativeCount.value, 0, 30, 2))),
             neutralMode: String(m.scale.neutralMode.value ?? "split") as any,
             asPercent: !!m.scale.asPercent.value,
         },
         colors: {
-            negativeColor: m.colors.negativeColor.value?.value ?? "#BF616A",
-            neutralColor:  m.colors.neutralColor.value?.value  ?? "#D8DEE9",
-            positiveColor: m.colors.positiveColor.value?.value ?? "#5E81AC",
+            negativeColor: color(m.colors.negativeColor, "#BF616A"),
+            neutralColor:  color(m.colors.neutralColor, "#D8DEE9"),
+            positiveColor: color(m.colors.positiveColor, "#5E81AC"),
         },
         qtable: {
             blockWidth:         clamp(m.qtable.blockWidth.value, 0, 40, 14),
@@ -304,15 +492,15 @@ export function toSettings(m: LikertFormattingModel): LikertSettings {
             blockOpacity:       clamp(m.qtable.blockOpacity.value, 0, 100, 14),
             blockFontFamily:    String(m.qtable.blockFontFamily.value || "Segoe UI"),
             blockFontSize:      clamp(m.qtable.blockFontSize.value, 7, 28, 11),
-            blockColor:         m.qtable.blockColor.value?.value ?? "#2E3440",
+            blockColor:         color(m.qtable.blockColor, "#2E3440"),
             statShow:           !!m.qtable.statShow.value,
             statMode:           String(m.qtable.statMode.value ?? "mean") as any,
             statSize:           clamp(m.qtable.statSize.value, 16, 90, 34),
-            statFill:           m.qtable.statFill.value?.value ?? "#FFFFFF",
+            statFill:           color(m.qtable.statFill, "#FFFFFF"),
             questionAlign:      String(m.qtable.questionAlign.value ?? "left") as any,
             questionFontFamily: String(m.qtable.questionFontFamily.value || "Segoe UI"),
             questionFontSize:   clamp(m.qtable.questionFontSize.value, 7, 28, 10),
-            questionColor:      m.qtable.questionColor.value?.value ?? "#3B4252",
+            questionColor:      color(m.qtable.questionColor, "#3B4252"),
             separator:          !!m.qtable.separator.value,
         },
         labels: {
@@ -322,31 +510,76 @@ export function toSettings(m: LikertFormattingModel): LikertSettings {
             questionWidth: clamp(m.labels.questionWidth.value, 10, 60, 32),
             labelGap:      clamp(m.labels.labelGap.value, 0, 60, 8),
             fontSize:      clamp(m.labels.fontSize.value, 7, 24, 10),
-            textColor:     m.labels.textColor.value?.value ?? "#3B4252",
+            textColor:     color(m.labels.textColor, "#3B4252"),
         },
         boxes: {
             show:    !!m.boxes.show.value,
             size:    Math.round(clamp(parseFloat(String(m.boxes.size.value)), 1, 3, 2)),
             showNps: !!m.boxes.showNps.value,
             fontSize:    clamp(m.boxes.fontSize.value, 7, 28, 10),
-            textColor:   m.boxes.textColor.value?.value ?? "#3B4252",
-            npsPositive: m.boxes.npsPositive.value?.value ?? "#A3BE8C",
-            npsNegative: m.boxes.npsNegative.value?.value ?? "#BF616A",
+            textColor:   color(m.boxes.textColor, "#3B4252"),
+            npsPositive: color(m.boxes.npsPositive, "#A3BE8C"),
+            npsNegative: color(m.boxes.npsNegative, "#BF616A"),
         },
         benchmark: {
             show:  !!m.benchmark.show.value,
             value: clamp(m.benchmark.value.value, 0, 100, 70),
-            color: m.benchmark.color.value?.value ?? "#4C566A",
+            color: color(m.benchmark.color, "#4C566A"),
         },
         layout: {
+            rowHeightMode: String(m.layout.rowHeightMode.value ?? "auto") === "fixed" ? "fixed" : "auto",
+            rowHeight:    clamp(m.layout.rowHeight.value, 12, 120, 32),
             enableScroll: !!m.layout.enableScroll.value,
             minRowHeight: clamp(m.layout.minRowHeight.value, 12, 80, 26),
             segmentGap:   clamp(m.layout.segmentGap.value, 0, 6, 1),
             rowGap:       clamp(m.layout.rowGap.value, 0, 40, 6),
         },
+        valueAxis: {
+            show:      !!m.valueAxis.show.value,
+            showTitle: !!m.valueAxis.showTitle.value,
+            titleText: String(m.valueAxis.titleText.value ?? ""),
+            fontSize:  clamp(m.valueAxis.fontSize.value, 6, 24, 9),
+            color:     color(m.valueAxis.color, ""),
+        },
+        categoryAxis: {
+            showTitle: !!m.categoryAxis.showTitle.value,
+            titleText: String(m.categoryAxis.titleText.value ?? ""),
+            fontSize:  clamp(m.categoryAxis.fontSize.value, 6, 24, 11),
+            color:     color(m.categoryAxis.color, ""),
+        },
+        gridlines: {
+            show:   !!m.gridlines.show.value,
+            step:   clamp(parseFloat(String(m.gridlines.step.value)), 10, 50, 25),
+            color:  color(m.gridlines.color, ""),
+            width:  clamp(m.gridlines.width.value, 0.5, 4, 1),
+            dashed: !!m.gridlines.dashed.value,
+        },
         legend: {
             show: !!m.legend.show.value,
             position: String(m.legend.position.value ?? "bottom") as any,
+            fontSize: clamp(m.legend.fontSize.value, 0, 24, 0),
+            color: color(m.legend.color, ""),
+        },
+        smallMultiples: {
+            columns:     Math.round(clamp(m.smallMultiples.columns.value, 0, 12, 0)),
+            gap:         clamp(m.smallMultiples.gap.value, 0, 60, 8),
+            titleSize:   clamp(m.smallMultiples.titleSize.value, 7, 28, 12),
+            titleColor:  color(m.smallMultiples.titleColor, ""),
+            titleBold:   !!m.smallMultiples.titleBold.value,
+            titleAlign:  String(m.smallMultiples.titleAlign.value ?? "left") === "center" ? "center" : "left",
+            background:  color(m.smallMultiples.background, ""),
+            border:      !!m.smallMultiples.border.value,
+            borderColor: color(m.smallMultiples.borderColor, "#E1DFDD"),
+        },
+        accessibility: {
+            highContrast: String(m.accessibility.highContrast.value ?? "auto") === "on" ? "on" : "auto",
+            focusColor:   color(m.accessibility.focusColor, "#1F4E80"),
+            focusWidth:   clamp(m.accessibility.focusWidth.value, 1, 6, 2),
+            minTextSize:  clamp(m.accessibility.minTextSize.value, 6, 16, 8),
+            patterns:     !!m.accessibility.patterns.value,
+        },
+        background: {
+            color: color(m.background.color, ""),
         },
     };
 }
@@ -356,11 +589,14 @@ export const defaultSettings: LikertSettings = toSettings(new LikertFormattingMo
 /**
  * Lo que ve un usuario sin licencia. El resultado tiene que ser CORRECTO, no recortado: la
  * escala divergente completa sigue estando, con sus porcentajes y su centrado. Lo que se
- * retira son las lecturas de analista — Top/Bottom box, NPS y la referencia — no datos.
+ * retira son las lecturas de analista — Top/Bottom box, NPS y la referencia — y los estilos
+ * de la colección (vuelve a Report theme). Small multiples y bloques se quitan en el modelo
+ * de datos (visual.ts): sin ellos las filas se suman, no se pierden.
  */
 export function freeSettings(s: LikertSettings): LikertSettings {
     return {
         ...s,
+        style:     { ...s.style, template: "clean" },
         boxes:     { ...s.boxes, show: false, showNps: false },
         benchmark: { ...s.benchmark, show: false },
     };

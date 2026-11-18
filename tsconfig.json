@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
-    "target": "ES6",
-    "lib": ["ES6", "DOM"],
+    "target": "ES2019",
+    "module": "esnext",
+    "lib": ["ES2019", "DOM"],
     "strict": false,
     "noImplicitAny": false,
     "sourceMap": true,

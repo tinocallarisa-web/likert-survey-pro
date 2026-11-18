@@ -5,35 +5,48 @@
       "displayNameKey": "Role_Question",
       "name": "question",
       "kind": "Grouping",
-      "description": "One diverging bar per value: the survey question or item."
+      "description": "One diverging bar per value: the survey question or item. Put a hierarchy here to drill down.",
+      "descriptionKey": "Role_Question_Desc"
     },
     {
       "displayName": "Response",
       "displayNameKey": "Role_Response",
       "name": "response",
       "kind": "Grouping",
-      "description": "The scale point (Strongly disagree … Strongly agree). Use the Scale order well, or sort this column in the model, to control the order of the scale."
+      "description": "The scale point (Strongly disagree … Strongly agree). Use the Scale order well, or sort this column in the model, to control the order of the scale.",
+      "descriptionKey": "Role_Response_Desc"
     },
     {
       "displayName": "Value",
       "displayNameKey": "Role_Value",
       "name": "value",
       "kind": "Measure",
-      "description": "Count of responses, or any measure to distribute across the scale."
+      "description": "Count of responses, or any measure to distribute across the scale.",
+      "descriptionKey": "Role_Value_Desc"
     },
     {
       "displayName": "Scale order",
       "displayNameKey": "Role_Order",
       "name": "order",
       "kind": "Measure",
-      "description": "Optional numeric rank for each scale point (1 = leftmost). Use it when the response column is not sorted in the model: without a defined order the scale is meaningless."
+      "description": "Optional numeric rank for each scale point (1 = leftmost). Use it when the response column is not sorted in the model: without a defined order the scale is meaningless.",
+      "descriptionKey": "Role_Order_Desc"
     },
     {
       "displayName": "Group [Pro]",
       "displayNameKey": "Role_Group",
       "name": "group",
       "kind": "Grouping",
-      "description": "Optional block that questions belong to, rendered as a labelled section."
+      "description": "Optional block that questions belong to, rendered as a labelled section.",
+      "descriptionKey": "Role_Group_Desc"
+    },
+    {
+      "displayName": "Small multiples (Pro)",
+      "displayNameKey": "Role_Panel",
+      "name": "panel",
+      "kind": "Grouping",
+      "description": "One Likert chart per value (region, year, team), sharing the same questions and scale.",
+      "descriptionKey": "Role_Panel_Desc"
     },
     {
       "displayName": "Tooltips",
@@ -46,9 +59,6 @@
     {
       "conditions": [
         {
-          "question": {
-            "max": 1
-          },
           "response": {
             "max": 1
           },
@@ -59,6 +69,9 @@
             "max": 1
           },
           "group": {
+            "max": 1
+          },
+          "panel": {
             "max": 1
           }
         }
@@ -75,10 +88,15 @@
               "for": {
                 "in": "question"
               }
+            },
+            {
+              "for": {
+                "in": "panel"
+              }
             }
           ],
           "dataReductionAlgorithm": {
-            "top": {
+            "window": {
               "count": 1000
             }
           }
@@ -114,6 +132,77 @@
     }
   ],
   "objects": {
+    "general": {
+      "displayName": "General",
+      "displayNameKey": "Obj_General",
+      "properties": {
+        "formatString": {
+          "displayName": "Format string",
+          "displayNameKey": "Prop_GeneralFormatString",
+          "type": {
+            "formatting": {
+              "formatString": true
+            }
+          }
+        }
+      }
+    },
+    "style": {
+      "displayName": "Style template",
+      "displayNameKey": "Obj_Style",
+      "properties": {
+        "template": {
+          "displayName": "Template",
+          "displayNameKey": "Prop_StyleTemplate",
+          "type": {
+            "enumeration": [
+              {
+                "value": "clean",
+                "displayName": "Report theme",
+                "displayNameKey": "Enum_TplClean"
+              },
+              {
+                "value": "boardroom",
+                "displayName": "Boardroom (Pro)",
+                "displayNameKey": "Enum_TplBoardroom"
+              },
+              {
+                "value": "ledger",
+                "displayName": "Ledger (Pro)",
+                "displayNameKey": "Enum_TplLedger"
+              },
+              {
+                "value": "editorial",
+                "displayName": "Editorial (Pro)",
+                "displayNameKey": "Enum_TplEditorial"
+              },
+              {
+                "value": "signal",
+                "displayName": "Signal (Pro)",
+                "displayNameKey": "Enum_TplSignal"
+              },
+              {
+                "value": "aurora",
+                "displayName": "Aurora (Pro)",
+                "displayNameKey": "Enum_TplAurora"
+              },
+              {
+                "value": "terrace",
+                "displayName": "Terrace (Pro)",
+                "displayNameKey": "Enum_TplTerrace"
+              }
+            ]
+          }
+        },
+        "guide": {
+          "displayName": "Setup guide",
+          "displayNameKey": "Prop_StyleGuide",
+          "type": {
+            "bool": true
+          }
+        }
+      }
+    },
     "scale": {
       "displayName": "Scale",
       "displayNameKey": "Obj_Scale",
@@ -133,15 +222,18 @@
             "enumeration": [
               {
                 "value": "split",
-                "displayName": "Split across the centre"
+                "displayName": "Split across the centre",
+                "displayNameKey": "Enum_NeutralSplit"
               },
               {
                 "value": "right",
-                "displayName": "Count as positive"
+                "displayName": "Count as positive",
+                "displayNameKey": "Enum_NeutralRight"
               },
               {
                 "value": "exclude",
-                "displayName": "Leave out of the bar"
+                "displayName": "Leave out of the bar",
+                "displayNameKey": "Enum_NeutralExclude"
               }
             ]
           }
@@ -289,15 +381,18 @@
             "enumeration": [
               {
                 "value": "mean",
-                "displayName": "Mean score"
+                "displayName": "Mean score",
+                "displayNameKey": "Enum_StatMean"
               },
               {
                 "value": "positive",
-                "displayName": "% positive"
+                "displayName": "% positive",
+                "displayNameKey": "Enum_StatPositive"
               },
               {
                 "value": "nps",
-                "displayName": "NPS"
+                "displayName": "NPS",
+                "displayNameKey": "Enum_StatNps"
               }
             ]
           }
@@ -327,11 +422,13 @@
             "enumeration": [
               {
                 "value": "left",
-                "displayName": "Left"
+                "displayName": "Left",
+                "displayNameKey": "Enum_AlignLeft"
               },
               {
                 "value": "right",
-                "displayName": "Right"
+                "displayName": "Right",
+                "displayNameKey": "Enum_AlignRight"
               }
             ]
           }
@@ -454,15 +551,18 @@
             "enumeration": [
               {
                 "value": "1",
-                "displayName": "Top-1 / Bottom-1"
+                "displayName": "Top-1 / Bottom-1",
+                "displayNameKey": "Enum_Box1"
               },
               {
                 "value": "2",
-                "displayName": "Top-2 / Bottom-2"
+                "displayName": "Top-2 / Bottom-2",
+                "displayNameKey": "Enum_Box2"
               },
               {
                 "value": "3",
-                "displayName": "Top-3 / Bottom-3"
+                "displayName": "Top-3 / Bottom-3",
+                "displayNameKey": "Enum_Box3"
               }
             ]
           }
@@ -554,6 +654,32 @@
       "displayName": "Layout",
       "displayNameKey": "Obj_Layout",
       "properties": {
+        "rowHeightMode": {
+          "displayName": "Row height",
+          "displayNameKey": "Prop_LayoutRowHeightMode",
+          "type": {
+            "enumeration": [
+              {
+                "value": "auto",
+                "displayName": "Automatic",
+                "displayNameKey": "Enum_RowAuto"
+              },
+              {
+                "value": "fixed",
+                "displayName": "Fixed",
+                "displayNameKey": "Enum_RowFixed"
+              }
+            ]
+          },
+          "description": "Automatic: the rows share the height of the visual, with bars up to 64 px. Fixed: every row takes the height you give."
+        },
+        "rowHeight": {
+          "displayName": "Fixed row height (px)",
+          "displayNameKey": "Prop_LayoutRowHeight",
+          "type": {
+            "numeric": true
+          }
+        },
         "enableScroll": {
           "displayName": "Scroll when rows do not fit",
           "displayNameKey": "Prop_LayoutEnableScroll",
@@ -587,6 +713,155 @@
         }
       }
     },
+    "valueAxis": {
+      "displayName": "Value axis",
+      "displayNameKey": "Obj_ValueAxis",
+      "properties": {
+        "show": {
+          "displayName": "Show axis labels",
+          "displayNameKey": "Prop_ValueAxisShow",
+          "type": {
+            "bool": true
+          }
+        },
+        "showTitle": {
+          "displayName": "Title",
+          "displayNameKey": "Prop_ValueAxisShowTitle",
+          "type": {
+            "bool": true
+          }
+        },
+        "titleText": {
+          "displayName": "Title text (empty = automatic)",
+          "displayNameKey": "Prop_ValueAxisTitleText",
+          "type": {
+            "text": true
+          }
+        },
+        "fontSize": {
+          "displayName": "Text size",
+          "displayNameKey": "Prop_ValueAxisFontSize",
+          "type": {
+            "numeric": true
+          }
+        },
+        "color": {
+          "displayName": "Text color",
+          "displayNameKey": "Prop_ValueAxisColor",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "categoryAxis": {
+      "displayName": "Category axis",
+      "displayNameKey": "Obj_CategoryAxis",
+      "properties": {
+        "showTitle": {
+          "displayName": "Title",
+          "displayNameKey": "Prop_CategoryAxisShowTitle",
+          "type": {
+            "bool": true
+          }
+        },
+        "titleText": {
+          "displayName": "Title text (empty = field name)",
+          "displayNameKey": "Prop_CategoryAxisTitleText",
+          "type": {
+            "text": true
+          }
+        },
+        "fontSize": {
+          "displayName": "Title size",
+          "displayNameKey": "Prop_CategoryAxisFontSize",
+          "type": {
+            "numeric": true
+          }
+        },
+        "color": {
+          "displayName": "Title color",
+          "displayNameKey": "Prop_CategoryAxisColor",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "gridlines": {
+      "displayName": "Gridlines",
+      "displayNameKey": "Obj_Gridlines",
+      "properties": {
+        "show": {
+          "displayName": "Show gridlines",
+          "displayNameKey": "Prop_GridlinesShow",
+          "type": {
+            "bool": true
+          }
+        },
+        "step": {
+          "displayName": "Every",
+          "displayNameKey": "Prop_GridlinesStep",
+          "type": {
+            "enumeration": [
+              {
+                "value": "10",
+                "displayName": "10%",
+                "displayNameKey": "Enum_Step10"
+              },
+              {
+                "value": "20",
+                "displayName": "20%",
+                "displayNameKey": "Enum_Step20"
+              },
+              {
+                "value": "25",
+                "displayName": "25%",
+                "displayNameKey": "Enum_Step25"
+              },
+              {
+                "value": "50",
+                "displayName": "50%",
+                "displayNameKey": "Enum_Step50"
+              }
+            ]
+          }
+        },
+        "color": {
+          "displayName": "Line color",
+          "displayNameKey": "Prop_GridlinesColor",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "width": {
+          "displayName": "Line width",
+          "displayNameKey": "Prop_GridlinesWidth",
+          "type": {
+            "numeric": true
+          }
+        },
+        "dashed": {
+          "displayName": "Dashed",
+          "displayNameKey": "Prop_GridlinesDashed",
+          "type": {
+            "bool": true
+          }
+        }
+      }
+    },
     "legend": {
       "displayName": "Legend",
       "displayNameKey": "Obj_Legend",
@@ -605,13 +880,198 @@
             "enumeration": [
               {
                 "value": "top",
-                "displayName": "Top"
+                "displayName": "Top",
+                "displayNameKey": "Enum_PosTop"
               },
               {
                 "value": "bottom",
-                "displayName": "Bottom"
+                "displayName": "Bottom",
+                "displayNameKey": "Enum_PosBottom"
               }
             ]
+          }
+        },
+        "fontSize": {
+          "displayName": "Text size (0 = as labels)",
+          "displayNameKey": "Prop_LegendFontSize",
+          "type": {
+            "numeric": true
+          }
+        },
+        "color": {
+          "displayName": "Text color",
+          "displayNameKey": "Prop_LegendColor",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "smallMultiples": {
+      "displayName": "Small multiples",
+      "displayNameKey": "Obj_SmallMultiples",
+      "properties": {
+        "columns": {
+          "displayName": "Columns (0 = automatic)",
+          "displayNameKey": "Prop_SmColumns",
+          "type": {
+            "numeric": true
+          }
+        },
+        "gap": {
+          "displayName": "Space between panels",
+          "displayNameKey": "Prop_SmGap",
+          "type": {
+            "numeric": true
+          }
+        },
+        "titleSize": {
+          "displayName": "Title size",
+          "displayNameKey": "Prop_SmTitleSize",
+          "type": {
+            "numeric": true
+          }
+        },
+        "titleColor": {
+          "displayName": "Title color",
+          "displayNameKey": "Prop_SmTitleColor",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "titleBold": {
+          "displayName": "Bold title",
+          "displayNameKey": "Prop_SmTitleBold",
+          "type": {
+            "bool": true
+          }
+        },
+        "titleAlign": {
+          "displayName": "Title alignment",
+          "displayNameKey": "Prop_SmTitleAlign",
+          "type": {
+            "enumeration": [
+              {
+                "value": "left",
+                "displayName": "Left",
+                "displayNameKey": "Enum_AlignLeft"
+              },
+              {
+                "value": "center",
+                "displayName": "Center",
+                "displayNameKey": "Enum_AlignCenter"
+              }
+            ]
+          }
+        },
+        "background": {
+          "displayName": "Panel background",
+          "displayNameKey": "Prop_SmBackground",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "border": {
+          "displayName": "Panel border",
+          "displayNameKey": "Prop_SmBorder",
+          "type": {
+            "bool": true
+          }
+        },
+        "borderColor": {
+          "displayName": "Panel border color",
+          "displayNameKey": "Prop_SmBorderColor",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "accessibility": {
+      "displayName": "Accessibility",
+      "displayNameKey": "Obj_Accessibility",
+      "properties": {
+        "highContrast": {
+          "displayName": "High contrast",
+          "displayNameKey": "Prop_AccHighContrast",
+          "type": {
+            "enumeration": [
+              {
+                "value": "auto",
+                "displayName": "Automatic (Windows setting)",
+                "displayNameKey": "Enum_HcAuto"
+              },
+              {
+                "value": "on",
+                "displayName": "On",
+                "displayNameKey": "Enum_HcOn"
+              }
+            ]
+          }
+        },
+        "focusColor": {
+          "displayName": "Focus color",
+          "displayNameKey": "Prop_AccFocusColor",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
+          }
+        },
+        "focusWidth": {
+          "displayName": "Focus width",
+          "displayNameKey": "Prop_AccFocusWidth",
+          "type": {
+            "numeric": true
+          }
+        },
+        "minTextSize": {
+          "displayName": "Minimum text size",
+          "displayNameKey": "Prop_AccMinTextSize",
+          "type": {
+            "numeric": true
+          }
+        },
+        "patterns": {
+          "displayName": "Patterns on scale points",
+          "displayNameKey": "Prop_AccPatterns",
+          "type": {
+            "bool": true
+          }
+        }
+      }
+    },
+    "background": {
+      "displayName": "Background",
+      "displayNameKey": "Obj_Background",
+      "properties": {
+        "color": {
+          "displayName": "Color",
+          "displayNameKey": "Prop_BackgroundColor",
+          "type": {
+            "fill": {
+              "solid": {
+                "color": true
+              }
+            }
           }
         }
       }
@@ -634,5 +1094,13 @@
   "supportsLandingPage": true,
   "supportsKeyboardFocus": true,
   "supportsMultiVisualSelection": true,
-  "privileges": []
+  "privileges": [],
+  "drilldown": {
+    "roles": [
+      "question"
+    ]
+  },
+  "supportsEmptyDataView": true,
+  "supportsOnObjectFormatting": true,
+  "enablePointerEventsFormatMode": true
 }
