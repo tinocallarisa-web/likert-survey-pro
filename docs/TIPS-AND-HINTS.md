@@ -247,9 +247,23 @@ side and the density the distance from neutral, so the chart survives a grey-sca
 ## Troubleshooting
 
 **The scale is in the wrong order**
-`Scale order` is empty, or it is not resolving to a number per response — the minimum numeric
-value in the group is used, so a text column will not work. Alternative: set *Sort by column*
+`Scale order` is empty, or it is not a number — a text column will not work. The order of the
+scale comes from the smallest `Scale order` value of each response. Alternative: set *Sort by column*
 on the response column in the model.
+
+**The Mean score looks wrong, or a note asks for the Minimum aggregation**
+`Scale order` is summarised as *Sum*, so Power BI sends code × answers instead of the code. The
+visual divides it back when the values are evenly spaced (50, 100 … 250 becomes 1 … 5) and
+otherwise scores the points 1, 2, 3 in scale order. Set `Scale order` to *Minimum* in the field well
+to remove the note. Top/Bottom box and NPS do not depend on it.
+
+**Top and bottom box percentages look different from another report**
+Check *Top / Bottom box → Box size*: the default is Top-2 / Bottom-2 (the two most positive and
+the two most negative points). Top-1 / Bottom-1 counts only the end point of each side.
+
+**The block band disappears when I drill or expand**
+With two levels showing, the first is the block and the second the question. Drilled down to the
+last level, the bars are the questions alone, without blocks; drill up to get them back.
 
 **Ten questions fill only half of a tall visual**
 Set *Layout → Row height* to *Automatic* (the default since 1.1). With *Fixed*, the row height
