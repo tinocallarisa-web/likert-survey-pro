@@ -27,7 +27,7 @@ Plan "likert-survey-pro-tcviz" (or "partner") active: no watermark.
 
 PRIVACY/NETWORK
 No network calls, telemetry, cookies or storage; privileges: []. Start screen links open
-only on click via host.launchUrl. No innerHTML: createElementNS and textContent.
+only on click via host.launchUrl. No innerHTML in src: createElementNS and textContent.
 ESLint clean, npm audit 0.
 
 LICENSING

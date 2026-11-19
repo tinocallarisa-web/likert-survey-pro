@@ -5,7 +5,7 @@ Versioning follows `MAJOR.MINOR.PATCH.BUILD` in `pbiviz.json` and semver in `pac
 
 ---
 
-## [1.1.0.0] — 2026-11-18 — test build, not yet submitted
+## [1.1.0.0] — 2026-11-19
 
 ### Added — free
 - **Row height: Automatic or Fixed** (Layout card). Automatic is the default: the rows share the
