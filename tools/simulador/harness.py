@@ -7,6 +7,8 @@ No reproduce el motor de Power BI: tooltips, menús, marcadores y licencia reale
 
 Uso:  node build-test.js         && python tools/simulador/harness.py pro    → capturas Pro + comprobaciones
       node build-test.js --free  && python tools/simulador/harness.py free   → Free / vista previa / selección
+      node build-test.js         && python tools/simulador/harness.py ficha  → solo las imágenes de la ficha (60_* a 62_*),
+                                                                           para tools/gen_infographic.py
 Las capturas van a tools/simulador/capturas/. Sale con código 1 si alguna comprobación falla.
 """
 import asyncio, io, json, os, random, sys
@@ -141,6 +143,8 @@ async def upd(pg, sp, W, H, view=0, op=0, fmt=False):
 async def shot(browser, name, sp, W, H, view=0, **kw):
     pg, errs = await page(browser, W, H, **kw)
     await upd(pg, sp, W, H, view)
+    if name.startswith("6"):   # imágenes de la ficha: sin la marca "test AAAA-MM-DD" de la build de prueba
+        await pg.add_style_tag(content=".lk-stamp{display:none!important}")
     await pg.screenshot(path=os.path.join(OUT, name + ".png"))
     ev = await pg.evaluate("() => __ev.join('')")
     info = await pg.evaluate("() => ({ segs: document.querySelectorAll('[data-seg]').length, note: (document.querySelector('.lk-note')||{}).textContent || '', wm: (document.querySelector('.tcviz-wm')||{style:{}}).style.display })")
@@ -162,11 +166,65 @@ async def bar_metrics(pg):
     }""")
 
 
+# ── Imágenes de la ficha (1.1) ────────────────────────────────────────────────────────────────────────────────────────
+# Encuesta de clima ficticia y fija (no aleatoria): 10 preguntas en 3 bloques, 4 regiones de 60 respuestas por pregunta.
+# Reparto en % (muy en desacuerdo … muy de acuerdo) de toda la empresa; cada región se desplaza un poco.
+FICHA_Q = [
+    ("Engagement", "I am proud to work here", [4, 8, 18, 42, 28]),
+    ("Engagement", "I would recommend this company", [6, 11, 20, 38, 25]),
+    ("Engagement", "I see myself here in two years", [13, 21, 25, 26, 15]),
+    ("Management", "My manager gives useful feedback", [9, 16, 22, 35, 18]),
+    ("Management", "Decisions are explained to us", [24, 33, 19, 17, 7]),
+    ("Management", "I trust senior leadership", [15, 24, 26, 25, 10]),
+    ("Workplace", "I have the tools I need", [5, 12, 20, 40, 23]),
+    ("Workplace", "My workload is manageable", [17, 29, 23, 21, 10]),
+    ("Workplace", "Health and safety is taken seriously", [2, 4, 10, 36, 48]),
+    ("Workplace", "I can balance work and personal life", [12, 22, 24, 28, 14]),
+]
+FICHA_REG = {"North": 0.9, "South": -0.6, "East": 0.2, "West": -1.1}   # >0 más de acuerdo
+
+
+def ficha_rows(panels):
+    rows = []
+    for b, q, pct in FICHA_Q:
+        por_region = []
+        for reg, s in FICHA_REG.items():
+            w = [max(0.5, x * (1 + s * 0.12 * (i - 2))) for i, x in enumerate(pct)]
+            tot = sum(w)
+            c = [round(60 * x / tot) for x in w]
+            c[2] += 60 - sum(c)
+            por_region.append((reg, c))
+        if panels:
+            rows += [{"group": b, "question": q, "panel": reg, "counts": c} for reg, c in por_region]
+        else:
+            rows.append({"group": b, "question": q, "panel": None, "counts": [sum(c[i] for _, c in por_region) for i in range(5)]})
+    return rows
+
+
+def ficha_spec(group=True, panel=False, objects=None):
+    return {"rows": ficha_rows(panel), "responses": RESP, "group": group, "panel": panel, "objects": objects or {}}
+
+
+async def ficha(b):
+    """Build de prueba (Pro forzado, sin marca de agua), vista de lectura, Report theme salvo en la rejilla de estilos."""
+    pro = {"boxes": {"show": True, "showNps": True}, "benchmark": {"show": True, "value": 60}}
+    await shot(b, "60_central", ficha_spec(objects={**pro, "qtable": {"blockWidth": 18}}), 852, 354)
+    await shot(b, "60_hero", ficha_spec(objects=pro), 900, 600)
+    await shot(b, "60_free", ficha_spec(group=False, objects={"labels": {"questionWidth": 40}}), 640, 430)
+    await shot(b, "60_pro_sm", ficha_spec(panel=True, objects={"smallMultiples": {"columns": 2}, "labels": {"questionWidth": 50}, "qtable": {"blockWidth": 22}}), 760, 470)
+    for k, (w, h) in {"l": (900, 700), "m": (520, 330), "s": (300, 170)}.items():
+        await shot(b, "61_size_" + k, ficha_spec(objects=pro), w, h)
+    for st in ("boardroom", "ledger", "editorial", "signal", "aurora", "terrace"):
+        await shot(b, "62_style_" + st, ficha_spec(objects={"style": {"template": st}, "boxes": {"show": True, "showNps": True}, "qtable": {"blockWidth": 20}}), 720, 420)
+
+
 async def main(mode):
     os.makedirs(OUT, exist_ok=True)
     async with async_playwright() as p:
         b = await p.chromium.launch()
-        if mode == "pro":
+        if mode == "ficha":
+            await ficha(b)
+        elif mode == "pro":
             await shot(b, "01_basic", spec(group=False), 960, 560)
             await shot(b, "02_pro_blocks_boxes_nps", spec(objects={"boxes": {"show": True, "showNps": True}, "benchmark": {"show": True, "value": 60}}), 1100, 600)
             await shot(b, "03_small_multiples", spec(panel=True), 1280, 700)
